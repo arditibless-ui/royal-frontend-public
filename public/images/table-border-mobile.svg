@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="440" height="340" viewBox="0 0 440 340">
+  <defs>
+    <linearGradient id="woodGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="rgb(180,83,9)"/>
+      <stop offset="100%" stop-color="rgb(120,53,15)"/>
+    </linearGradient>
+    <filter id="innerGlow"><feGaussianBlur stdDeviation="1.5"/></filter>
+  </defs>
+  <!-- Outer wood ellipse -->
+  <ellipse cx="220.0" cy="170.0" rx="220.0" ry="170.0" fill="url(#woodGrad)"/>
+  <!-- Punch inner hole by overlaying same color as page (transparent via mask) -->
+  <mask id="ringMask">
+    <rect x="0" y="0" width="440" height="340" fill="white"/>
+    <ellipse cx="220.0" cy="170.0" rx="192.0" ry="142.0" fill="black"/>
+  </mask>
+  <g mask="url(#ringMask)">
+    <ellipse cx="220.0" cy="170.0" rx="220.0" ry="170.0" fill="url(#woodGrad)"/>
+  </g>
+  <!-- padded inner leather strip -->
+  <ellipse cx="220.0" cy="170.0" rx="199.0" ry="149.0"
+           fill="none" stroke="rgb(60,35,20)" stroke-width="14" opacity="0.95"/>
+  <!-- highlights -->
+  <ellipse cx="220.0" cy="170.0" rx="220.0" ry="170.0" fill="none" stroke="rgba(255,255,255,0.16)" stroke-width="2"/>
+  <ellipse cx="220.0" cy="170.0" rx="218.0" ry="168.0" fill="none" stroke="rgba(0,0,0,0.24)" stroke-width="2"/>
+</svg>

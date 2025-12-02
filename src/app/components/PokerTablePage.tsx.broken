@@ -1,0 +1,1206 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowLeft, Users, Coins, Eye, Settings, Play, Pause, Menu, MessageCircle, Send } from 'lucide-react'
+import { API_URL } from '../../constants/api'
+import { simulatePokerGame, type Player as AIPlayer, type GameState as AIGameState, type Card as AICard } from '../../services/pokerBotAI'
+
+interface PokerTablePageProps {
+  roomCode: string
+  onBack: () => void
+  isAdminView?: boolean  // New prop to identify admin viewing mode
+}
+
+interface Player {
+  _id: string
+  username: string
+  chips: number
+  cards?: Card[]
+  position: number
+  status: string
+  isBot?: boolean
+  isReady?: boolean
+  currentBet?: number
+  folded?: boolean
+}
+
+interface Card {
+  suit: string
+  rank: string
+}
+
+interface GameState {
+  round: 'preflop' | 'flop' | 'turn' | 'river' | 'showdown' | string
+  communityCards: Card[]
+  currentBet: number
+  currentPlayer: number
+  pot: number
+  dealerPosition?: number
+  smallBlind?: number
+  bigBlind?: number
+}
+
+interface Room {
+  _id: string
+  code: string
+  maxPlayers: number
+  buyIn: number
+  players: Player[]
+  status: string
+  currentPot: number
+  gameState?: GameState
+}
+
+export default function PokerTablePage({ roomCode, onBack, isAdminView = false }: PokerTablePageProps) {
+  const [room, setRoom] = useState<Room | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [playerPerspective, setPlayerPerspective] = useState<number | null>(null)
+  const [gameActions, setGameActions] = useState<string[]>([])
+  const [showMenu, setShowMenu] = useState(false)
+  const [showChat, setShowChat] = useState(false)
+  const [chatMessage, setChatMessage] = useState('')
+  const [chatMessages, setChatMessages] = useState<Array<{playerId: string, playerName: string, message: string, timestamp: number}>>([])
+  const [activeBubbles, setActiveBubbles] = useState<Array<{playerId: string, playerName: string, message: string, timestamp: number}>>([])
+  const [playerActions, setPlayerActions] = useState<{[key: number]: {action: string, timestamp: number}}>({})
+  const [joinNotification, setJoinNotification] = useState<{playerName: string, timestamp: number} | null>(null)
+  const previousPlayerCountRef = useRef<number>(0)
+  const previousPlayerIdsRef = useRef<string[]>([])
+  const gameIntervalRef = useRef<NodeJS.Timeout | null>(null)
+  const gameActiveRef = useRef(false) // Track if game has been initialized
+
+  const fetchRoom = async () => {
+    // Don't fetch if game has been initialized - check both ref AND localStorage
+    const isGameActive = gameActiveRef.current || localStorage.getItem(`game_active_${roomCode}`) === 'true'
+    if (isGameActive) {
+      console.log('⏸️ Skipping fetch - game is active')
+      gameActiveRef.current = true // Sync ref with localStorage
+      return
+    }
+    
+    console.log('🔄 Fetching room data...')
+    
+    // Don't keep retrying if we already have error state with mock data
+    if (room && !API_URL) {
+      return
+    }
+
+    try {
+      setError(null)
+      
+      // If no API_URL, skip the fetch and use mock data immediately
+      if (!API_URL || API_URL === '') {
+        const mockRoom = {
+          _id: roomCode,
+          code: roomCode,
+          maxPlayers: 9,
+          buyIn: 100,
+          players: [
+            { _id: '1', username: 'Bot1', chips: 1000, position: 0, status: 'active', isBot: true, isReady: true },
+            { _id: '2', username: 'Bot2', chips: 1000, position: 1, status: 'active', isBot: true, isReady: true },
+            { _id: '3', username: 'Bot3', chips: 1000, position: 2, status: 'active', isBot: true, isReady: true },
+            { _id: '4', username: 'Bot4', chips: 1000, position: 3, status: 'active', isBot: true, isReady: true },
+            { _id: '5', username: 'Bot5', chips: 1000, position: 4, status: 'active', isBot: true, isReady: true },
+            { _id: '6', username: 'Bot6', chips: 1000, position: 5, status: 'active', isBot: true, isReady: true },
+            { _id: '7', username: 'Bot7', chips: 1000, position: 6, status: 'active', isBot: true, isReady: true },
+            { _id: '8', username: 'Bot8', chips: 1000, position: 7, status: 'active', isBot: true, isReady: true },
+            { _id: '9', username: 'Bot9', chips: 1000, position: 8, status: 'active', isBot: true, isReady: true },
+          ],
+          status: 'waiting',
+          currentPot: 0
+        }
+        setRoom(mockRoom)
+        setLoading(false)
+        return
+      }
+
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${API_URL}/api/games/rooms/${roomCode}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Room data received:', data)
+        
+        // Detect new player joins
+        if (data.room && data.room.players) {
+          const currentPlayerIds = data.room.players.map((p: Player) => p._id)
+          const previousIds = previousPlayerIdsRef.current
+          
+          // Check if there's a new player (not just initial load)
+          if (previousIds.length > 0 && currentPlayerIds.length > previousIds.length) {
+            const newPlayerId = currentPlayerIds.find((id: string) => !previousIds.includes(id))
+            if (newPlayerId) {
+              const newPlayer = data.room.players.find((p: Player) => p._id === newPlayerId)
+              if (newPlayer) {
+                console.log('🔔 New player joined:', newPlayer.username)
+                setJoinNotification({
+                  playerName: newPlayer.username,
+                  timestamp: Date.now()
+                })
+                
+                // Auto-remove notification after 4 seconds
+                setTimeout(() => {
+                  setJoinNotification(null)
+                }, 4000)
+              }
+            }
+          }
+          
+          // Update refs for next comparison
+          previousPlayerCountRef.current = data.room.players.length
+          previousPlayerIdsRef.current = currentPlayerIds
+        }
+        
+        setRoom(data.room)
+      } else {
+        setError(`Failed to fetch room: ${response.status}`)
+      }
+    } catch (err) {
+      console.error('Failed to fetch room:', err)
+      
+      // Don't reset room if game is already active
+      const isGameActive = gameActiveRef.current || localStorage.getItem(`game_active_${roomCode}`) === 'true'
+      if (isGameActive) {
+        console.log('⏸️ Not resetting room - game is active')
+        return
+      }
+      
+      // Mock room data for demo (only if game not started)
+      setRoom({
+        _id: roomCode,
+        code: roomCode,
+        maxPlayers: 9,
+        buyIn: 100,
+        players: [
+          { _id: '1', username: 'Bot1', chips: 1000, position: 0, status: 'active', isBot: true, isReady: true },
+          { _id: '2', username: 'Bot2', chips: 1000, position: 1, status: 'active', isBot: true, isReady: true },
+          { _id: '3', username: 'Bot3', chips: 1000, position: 2, status: 'active', isBot: true, isReady: true },
+          { _id: '4', username: 'Bot4', chips: 1000, position: 3, status: 'active', isBot: true, isReady: true },
+          { _id: '5', username: 'Bot5', chips: 1000, position: 4, status: 'active', isBot: true, isReady: true },
+          { _id: '6', username: 'Bot6', chips: 1000, position: 5, status: 'active', isBot: true, isReady: true },
+          { _id: '7', username: 'Bot7', chips: 1000, position: 6, status: 'active', isBot: true, isReady: true },
+          { _id: '8', username: 'Bot8', chips: 1000, position: 7, status: 'active', isBot: true, isReady: true },
+          { _id: '9', username: 'Bot9', chips: 1000, position: 8, status: 'active', isBot: true, isReady: true },
+        ],
+        status: 'waiting',
+        currentPot: 0
+      })
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    fetchRoom()
+    // Only set interval if we have an API_URL
+    if (API_URL && API_URL !== '') {
+      const interval = setInterval(fetchRoom, 3000)
+      return () => clearInterval(interval)
+    }
+  }, [roomCode])
+
+  // Auto-detect current user and set player perspective
+  useEffect(() => {
+    if (room && playerPerspective === null) {
+      // Get current user from localStorage
+      const token = localStorage.getItem('token')
+      if (token) {
+        // Decode JWT to get user ID (simple parsing, not validation)
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]))
+          const userId = payload.userId || payload.id
+          
+          // Find player index
+          const playerIndex = room.players.findIndex(p => p._id === userId || p.user?._id === userId)
+          if (playerIndex !== -1) {
+            console.log('👤 Auto-setting player perspective to position', playerIndex)
+            setPlayerPerspective(playerIndex)
+          }
+        } catch (e) {
+          console.error('Failed to decode token:', e)
+        }
+      }
+    }
+  }, [room, playerPerspective])
+
+  // Initialize game with cards
+  const initializeGame = () => {
+    if (!room) return
+
+    console.log('🎮 Initializing poker game with', room.players.length, 'players')
+
+    const suits = ['hearts', 'diamonds', 'clubs', 'spades']
+    const ranks = ['2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A']
+    const deck: Card[] = []
+    
+    suits.forEach(suit => {
+      ranks.forEach(rank => {
+        deck.push({ suit, rank })
+      })
+    })
+
+    // Shuffle deck
+    for (let i = deck.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [deck[i], deck[j]] = [deck[j], deck[i]]
+    }
+
+    // Deal cards to players
+    const updatedPlayers = room.players.map((player, index) => ({
+      ...player,
+      cards: [deck[index * 2], deck[index * 2 + 1]],
+      currentBet: index === 1 ? 10 : index === 2 ? 20 : 0, // Blinds
+      folded: false,
+      status: 'active'
+    }))
+
+    const gameState: GameState = {
+      round: 'flop', // Start at flop so we can see community cards immediately
+      communityCards: [deck[18], deck[19], deck[20]], // Deal the flop (after 9 players × 2 = 18 cards)
+      currentBet: 20,
+      currentPlayer: 3,
+      pot: 30,
+      dealerPosition: 0,
+      smallBlind: 10,
+      bigBlind: 20
+    }
+
+    console.log('🃏 Dealt community cards:', gameState.communityCards)
+    console.log('👥 Players with cards:', updatedPlayers.map(p => ({ 
+      name: p.username, 
+      cards: p.cards, 
+      hasCards: !!p.cards && p.cards.length === 2 
+    })))
+
+    // Mark game as active to prevent fetchRoom from resetting state
+    gameActiveRef.current = true
+    localStorage.setItem(`game_active_${roomCode}`, 'true')
+
+    setRoom({
+      ...room,
+      players: updatedPlayers,
+      gameState,
+      status: 'playing',
+      currentPot: 30
+    })
+
+    setGameActions(['Game started!', 'Bot1 posts small blind (10)', 'Bot2 posts big blind (20)', 'Dealing flop...'])
+    
+    console.log('✅ Game state updated. Players:', updatedPlayers.length, 'GameState round:', gameState.round)
+    console.log('✅ Game is now active, fetchRoom should be blocked')
+  }
+
+  // Start/stop game simulation
+  const toggleGamePlay = () => {
+    console.log('🎮 toggleGamePlay called. Current isPlaying:', isPlaying, 'Has gameState:', !!room?.gameState)
+    
+    if (isPlaying) {
+      if (gameIntervalRef.current) {
+        clearInterval(gameIntervalRef.current)
+        gameIntervalRef.current = null
+      }
+      setIsPlaying(false)
+      console.log('⏸️ Game paused')
+    } else {
+      // Always initialize game when starting
+      if (!room?.gameState) {
+        console.log('🆕 No game state, initializing new game...')
+        initializeGame()
+        // Wait for state to update before starting interval
+        setTimeout(() => {
+          setIsPlaying(true)
+          gameIntervalRef.current = setInterval(() => {
+            simulateNextAction()
+          }, 2000) // Action every 2 seconds
+          console.log('▶️ Game started with fresh state')
+        }, 500) // Give time for room state to update
+      } else {
+        console.log('▶️ Resuming existing game')
+        setIsPlaying(true)
+        gameIntervalRef.current = setInterval(() => {
+          simulateNextAction()
+        }, 2000)
+      }
+    }
+  }
+
+  // Simulate next bot action
+  const simulateNextAction = () => {
+    setRoom(currentRoom => {
+      if (!currentRoom || !currentRoom.gameState) return currentRoom
+
+      const result = simulatePokerGame(
+        currentRoom.players as AIPlayer[],
+        currentRoom.gameState as AIGameState
+      )
+
+      setGameActions(prev => [...prev.slice(-5), ...result.actions])
+
+      // Track player actions for popup notifications
+      result.actions.forEach(action => {
+        console.log('🔔 Processing action:', action)
+        
+        // Parse action to extract player index and action type
+        // Format: "Bot1 called 20" or "Bot3 folded" or "Bot5 raised to 40"
+        const match = action.match(/(Bot\d+|Player\d*)\s+(raised|called|folded|checked|went all-in|bets|calls|folds|checks|raises)/i)
+        if (match) {
+          const playerName = match[1]
+          const actionType = match[2]
+          
+          console.log('✅ Matched action:', playerName, actionType)
+          
+          // Find player index by name
+          const playerIndex = currentRoom.players.findIndex(p => p.username === playerName)
+          if (playerIndex !== -1) {
+            const actionTimestamp = Date.now()
+            console.log('📍 Setting action for player index:', playerIndex, actionType)
+            
+            setPlayerActions(prev => ({
+              ...prev,
+              [playerIndex]: {
+                action: actionType,
+                timestamp: actionTimestamp
+              }
+            }))
+            
+            // Auto-remove after 1.5 seconds (increased from 1 second for better visibility)
+            setTimeout(() => {
+              setPlayerActions(prev => {
+                const newActions = { ...prev }
+                // Only remove if this is still the same action (by timestamp)
+                if (newActions[playerIndex]?.timestamp === actionTimestamp) {
+                  delete newActions[playerIndex]
+                }
+                return newActions
+              })
+            }, 1500)
+          } else {
+            console.log('⚠️ Player not found:', playerName)
+          }
+        } else {
+          console.log('❌ No match for action:', action)
+        }
+      })
+
+      return {
+        ...currentRoom,
+        players: result.players as Player[],
+        gameState: result.gameState as GameState,
+        currentPot: result.gameState.pot
+      }
+    })
+  }
+
+  // Handle back button - reset game state and call leave endpoint
+  const handleBack = async () => {
+    try {
+      // Call leave endpoint
+      const token = localStorage.getItem('token')
+      const response = await fetch(`${API_URL}/api/games/leave/${roomCode}`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      })
+
+      const data = await response.json()
+      
+      if (response.ok && data.penalty) {
+        console.log(`🚫 Leave penalty: ${data.penalty.cooldownSeconds}s (offense #${data.penalty.offenseCount})`)
+      }
+    } catch (err) {
+      console.error('Failed to call leave endpoint:', err)
+    } finally {
+      // Always allow navigation back even if API call fails
+      gameActiveRef.current = false
+      localStorage.removeItem(`game_active_${roomCode}`)
+      if (gameIntervalRef.current) {
+        clearInterval(gameIntervalRef.current)
+      }
+      onBack()
+    }
+  }
+
+  // Handle chat message send
+  const handleSendMessage = () => {
+    if (!chatMessage.trim() || !room) return
+    
+    const currentPlayer = playerPerspective !== null && room.players[playerPerspective]
+      ? room.players[playerPerspective]
+      : { _id: 'observer', username: 'Observer' }
+    
+    const newMessage = {
+      playerId: currentPlayer._id,
+      playerName: currentPlayer.username,
+      message: chatMessage.trim(),
+      timestamp: Date.now()
+    }
+    
+    // Add to chat history (permanent)
+    setChatMessages(prev => [...prev, newMessage])
+    
+    // Add to active bubbles (temporary - 5 seconds)
+    setActiveBubbles(prev => [...prev, newMessage])
+    
+    setChatMessage('')
+    
+    // Auto-remove speech bubble after 5 seconds (but keep in chat history)
+    setTimeout(() => {
+      setActiveBubbles(prev => prev.filter(msg => msg.timestamp !== newMessage.timestamp))
+    }, 5000)
+  }
+
+  // Cleanup interval on unmount
+  useEffect(() => {
+    return () => {
+      if (gameIntervalRef.current) {
+        clearInterval(gameIntervalRef.current)
+      }
+    }
+  }, [])
+
+  const getCardDisplay = (card: Card) => {
+    const suitSymbols: { [key: string]: string } = {
+      'hearts': '♥️',
+      'diamonds': '♦️',
+      'clubs': '♣️',
+      'spades': '♠️'
+    }
+    
+    const suitColors: { [key: string]: string } = {
+      'hearts': 'text-red-500',
+      'diamonds': 'text-red-500',
+      'clubs': 'text-black',
+      'spades': 'text-black'
+    }
+
+    return (
+      <div className="bg-white rounded-lg p-1 md:p-2 m-0.5 md:m-1 shadow-lg min-w-[2rem] md:min-w-[3rem] text-center border-2">
+        <div className="text-sm md:text-lg font-bold">{card.rank}</div>
+        <div className={`text-lg md:text-xl ${suitColors[card.suit]}`}>
+          {suitSymbols[card.suit]}
+        </div>
+      </div>
+    )
+  }
+
+  const getPositionStyle = (position: number, totalPlayers: number) => {
+    // Support up to 9 players for full poker table
+    const maxPositions = 9
+    
+    // Calculate rotation offset to place selected player at bottom center
+    // For 9 players arranged in a circle, bottom center is slightly past the middle
+    // Position 4.5 would be true bottom center (between index 4 and 5)
+    // We'll use 4.5 for better visual centering at the bottom
+    let actualPosition = position
+    if (playerPerspective !== null) {
+      // Rotate all positions so selected player appears at bottom center
+      const bottomCenterPosition = 4.5 // True bottom center for 9 players (0-8)
+      actualPosition = (position - playerPerspective + bottomCenterPosition + maxPositions) % maxPositions
+    }
+    
+    // Calculate angle for this position
+    const angle = (actualPosition * 360) / maxPositions
+    
+    // Responsive dimensions with better detection
+    const isSmall = typeof window !== 'undefined' && window.innerWidth < 640
+    const isMedium = typeof window !== 'undefined' && window.innerWidth < 768
+    const isLandscape = typeof window !== 'undefined' && window.innerHeight < 500
+    const isVerySmall = typeof window !== 'undefined' && window.innerHeight < 400
+    
+    // Ellipse radii - good size for visibility
+    let radiusX = isSmall ? 200 : isMedium ? 280 : 340
+    let radiusY = isSmall ? 100 : isMedium ? 140 : 180
+    
+    // Vertical offset - center position (50% keeps top players in place)
+    let verticalCenter = '50%'  // Keep centered, we'll adjust bottom players separately
+    
+    // Apply landscape optimizations
+    if (isLandscape && isSmall) {
+      radiusY = isVerySmall ? 55 : 65
+      radiusX = isVerySmall ? 180 : 195
+      verticalCenter = '50%'
+    }
+    
+    // Calculate position around elliptical table (start from top, clockwise)
+    const angleRad = (angle - 90) * (Math.PI / 180)
+    const x = Math.cos(angleRad) * radiusX
+    let y = Math.sin(angleRad) * radiusY
+    
+    // Adjust Y position for specific players that need to move up
+    // Use angle to identify: Bot9 (angle ~0°), Bot1 (angle ~40°), Bot5 (angle ~180°)
+    const normalizedAngle = angle % 360
+    const needsUpwardShift = (
+      (normalizedAngle >= 0 && normalizedAngle <= 50) ||      // Bot9 and Bot1 at top
+      (normalizedAngle >= 320 && normalizedAngle <= 360) ||   // Bot9 wrapping from other side
+      (normalizedAngle >= 160 && normalizedAngle <= 200)      // Bot5 at bottom center
+    )
+    
+    if (needsUpwardShift) {
+      // Move these specific players up significantly
+      const upwardShift = isSmall ? 70 : isMedium ? 60 : 50
+      y = y - upwardShift
+    }
+    
+    // Player card dimensions
+    const cardWidth = isSmall ? 6 : 8 // rem units for player card width
+    const cardHeight = isSmall ? 3 : 4 // rem units for player card height
+    
+    return {
+      left: `calc(50% + ${x}px - ${cardWidth/2}rem)`,
+      top: `calc(${verticalCenter} + ${y}px - ${cardHeight/2}rem)`,  // Use verticalCenter instead of 50%
+      position: 'absolute' as const,
+    }
+  }
+
+  return (
+    <div className="poker-table-wrapper">
+      <div className="min-h-screen bg-gradient-to-br from-green-900 via-green-800 to-green-900 relative overflow-auto">
+        {/* Safe Area Border - Shows content boundaries */}
+        <div className="safe-area-border" />
+        
+        {/* Portrait Warning for Mobile */}
+        <div className="portrait-warning hidden fixed inset-0 bg-green-900 flex-col items-center justify-center z-50 text-white p-6 text-center md:!hidden">
+          <div className="text-6xl mb-4">📱</div>
+          <h2 className="text-2xl font-bold mb-4">Please Rotate Your Device</h2>
+          <p className="text-lg mb-6">
+            Texas Hold'em Poker is best played in landscape mode for the optimal table experience.
+          </p>
+          <div className="text-4xl animate-pulse">🔄</div>
+          <p className="text-sm mt-4 opacity-75">
+            Turn your phone sideways to continue playing
+          </p>
+        </div>
+
+      {/* Landscape Content with Safe Area Border */}
+      <div className="landscape-content poker-table-container">
+        {/* Header with safe area padding */}
+        <div className="header-section absolute top-0 left-0 right-0 z-10">
+        <div className="flex justify-between items-start gap-1 sm:gap-2 fluid-gap">
+          <div className="flex flex-col gap-1 sm:gap-2">
+            {/* Back Button */}
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleBack}
+              className="adaptive-button flex items-center gap-1 bg-black/40 text-white rounded-lg hover:bg-black/60 transition-colors"
+            >
+              <ArrowLeft size={14} className="sm:w-4 sm:h-4 md:w-[18px] md:h-[18px]" />
+              <span className="hidden lg:inline">Back to Admin</span>
+              <span className="lg:hidden">Back</span>
+            </motion.button>
+
+            {/* View Mode Indicator - Moved under back button */}
+            <div className="view-mode-indicator">
+              <div className={`backdrop-blur-sm fluid-padding rounded-md md:rounded-lg border shadow-lg ${
+                playerPerspective !== null 
+                  ? 'bg-purple-600/90 border-purple-400/50' 
+                  : 'bg-blue-600/90 border-blue-400/50'
+              }`}>
+                <div className="flex items-center gap-0.5 sm:gap-1 md:gap-2 text-white">
+                  <Eye size={10} className="sm:w-3 sm:h-3 md:w-[16px] md:h-[16px]" />
+                  <span className="font-medium text-[9px] sm:text-[10px] md:text-sm whitespace-nowrap">
+                    {(() => {
+                      if (playerPerspective !== null && room && room.players && room.players[playerPerspective]) {
+                        const player = room.players[playerPerspective]
+                        console.log('👁️ Viewing as:', player.username, 'at index', playerPerspective)
+                        return `${player.username}`
+                      }
+                      return 'Observer'
+                    })()}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="header-controls flex items-center gap-1 sm:gap-1.5 md:gap-4 flex-wrap justify-end">
+            {/* Game Controls - Show only for admin */}
+            {isAdminView && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={toggleGamePlay}
+                className={`flex items-center gap-0.5 sm:gap-1 md:gap-2 px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded-lg transition-colors text-[10px] sm:text-xs md:text-sm whitespace-nowrap ${
+                  isPlaying 
+                    ? 'bg-red-600 hover:bg-red-500 text-white' 
+                    : 'bg-green-600 hover:bg-green-500 text-white'
+                }`}
+              >
+                {isPlaying ? (
+                  <>
+                    <Pause size={12} className="sm:w-[14px] sm:h-[14px] md:w-[16px] md:h-[16px]" />
+                    <span>Pause</span>
+                  </>
+                ) : (
+                  <>
+                    <Play size={12} className="sm:w-[14px] sm:h-[14px] md:w-[16px] md:h-[16px]" />
+                    <span>Start</span>
+                  </>
+                )}
+              </motion.button>
+            )}
+
+            {/* Menu Dropdown - Show only for admin */}
+            {isAdminView && (
+              <div className="relative">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowMenu(!showMenu)}
+                  className="flex items-center gap-1 px-2 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 bg-black/40 text-white rounded-lg hover:bg-black/60 transition-colors"
+                >
+                  <Menu size={14} className="sm:w-4 sm:h-4" />
+                </motion.button>
+
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                  {showMenu && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="absolute right-0 top-full mt-1 bg-black/95 backdrop-blur-sm rounded-lg border border-white/20 p-2 min-w-[160px] shadow-2xl z-[100]"
+                    >
+                      {/* Player Perspective Selector */}
+                      {room && room.players.length > 0 && (
+                        <div className="mb-2">
+                          <label className="text-white/60 text-[9px] block mb-1">View As:</label>
+                          <select
+                            value={playerPerspective ?? -1}
+                            onChange={(e) => {
+                              setPlayerPerspective(e.target.value === '-1' ? null : parseInt(e.target.value))
+                              setShowMenu(false)
+                            }}
+                            className="w-full bg-black/40 text-white px-2 py-1 rounded text-[10px] cursor-pointer border border-white/20 hover:bg-black/60 transition-colors"
+                          >
+                            <option value="-1">Observer</option>
+                            {room.players.map((player, index) => (
+                              <option key={player._id} value={index}>
+                                {player.username}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
+
+                      {/* Room Info */}
+                      <div className="border-t border-white/10 pt-2 space-y-1">
+                        <div className="flex items-center justify-between text-[10px]">
+                          <span className="text-white/60">Room:</span>
+                          <span className="text-white font-bold">{roomCode}</span>
+                        </div>
+                        {room && (
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="text-white/60">Players:</span>
+                            <span className="text-white font-bold">{room.players?.length || 0}/{room.maxPlayers}</span>
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="relative w-full h-screen flex items-center justify-center">
+        {loading && (
+          <div className="text-white text-xl">Loading poker table...</div>
+        )}
+
+        {error && (
+          <div className="text-center">
+            <div className="text-red-400 text-xl mb-4">Error: {error}</div>
+            <button
+              onClick={fetchRoom}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-500"
+            >
+              Retry
+            </button>
+          </div>
+        )}
+
+        {!loading && !error && !room && (
+          <div className="text-white text-xl">Room not found</div>
+        )}
+
+        {room && (
+          <>
+            {/* Poker Table Surface */}
+            <div className="poker-table-surface relative px-4 md:px-0">
+              {/* Table Felt - Elliptical poker table with proper proportions */}
+              <div className="w-[360px] h-[260px] sm:w-[520px] sm:h-[360px] md:w-[640px] md:h-[440px] bg-gradient-to-br from-green-700 to-green-800 rounded-full border-4 md:border-8 border-amber-600 shadow-2xl relative mx-auto ring-2 ring-yellow-400/20 ring-offset-4 ring-offset-green-900/50" style={{ borderRadius: '50%' }}>
+                {/* Table Inner Ring - Enhanced */}
+                <div className="absolute inset-2 md:inset-4 border-2 md:border-3 border-amber-500/40 rounded-full shadow-inner" />
+                <div className="absolute inset-4 md:inset-6 border border-amber-400/20 rounded-full" />
+                
+                {/* Community Cards Area */}
+                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full px-4">
+                  {/* Pot Display - Enhanced */}
+                  <div className="pot-display text-center mb-2 sm:mb-3 md:mb-4">
+                    <div className="inline-flex flex-col items-center bg-black/50 backdrop-blur-sm px-2 py-1 sm:px-3 sm:py-1.5 md:px-4 md:py-2 rounded-xl md:rounded-2xl border border-yellow-500/50 md:border-2 shadow-xl">
+                      <div className="text-yellow-400 text-[8px] sm:text-[9px] md:text-xs mb-0.5 md:mb-1">POT</div>
+                      <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
+                        <Coins size={14} className="text-yellow-400 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                        <span className="text-white font-bold text-lg sm:text-xl md:text-3xl">
+                          ${room.gameState?.pot || room.currentPot || 0}
+                        </span>
+                        <Coins size={14} className="text-yellow-400 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                      </div>
+                      <div className="text-green-300 text-[8px] sm:text-[9px] md:text-xs mt-0.5 md:mt-1">
+                        {room.gameState?.round?.toUpperCase() || 'WAITING'}
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <div className="flex justify-center flex-wrap gap-1">
+                      {(() => {
+                        const communityCards = room.gameState?.communityCards || []
+                        console.log('🎴 Rendering community cards:', communityCards.length, 'cards')
+                        return communityCards.map((card, index) => (
+                          <motion.div
+                            key={index}
+                            className="community-card"
+                            initial={{ scale: 0, rotate: 180 }}
+                            animate={{ scale: 1, rotate: 0 }}
+                            transition={{ delay: index * 0.2 }}
+                          >
+                            {getCardDisplay(card)}
+                          </motion.div>
+                        ))
+                      })()}
+                      {/* Empty card slots */}
+                      {Array.from({ length: 5 - (room.gameState?.communityCards?.length || 0) }).map((_, index) => (
+                        <div key={`empty-${index}`} className="bg-gray-300 rounded-lg p-1 md:p-2 m-0.5 md:m-1 shadow-lg min-w-[2rem] md:min-w-[3rem] text-center border-2 opacity-30">
+                          <div className="text-sm md:text-lg font-bold">?</div>
+                          <div className="text-lg md:text-xl">🂠</div>
+                        </div>
+                      ))}
+                    </div>
+                </div>
+
+                {/* Current Bet Display */}
+                {(room.gameState?.currentBet || 0) > 0 && (
+                  <div className="current-bet-indicator absolute top-1/4 left-1/2 transform -translate-x-1/2 px-2 hidden sm:block">
+                    <div className="bg-yellow-500 text-black px-2 py-0.5 md:px-3 md:py-1 rounded-full font-bold shadow-lg text-xs md:text-sm">
+                      Current Bet: ${room.gameState?.currentBet || 0}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Players Around Table */}
+              {(room.players || []).map((player, index) => (
+                <motion.div
+                  key={player._id}
+                  className="player-position absolute"
+                  style={getPositionStyle(index, Math.max(room.maxPlayers || 6, room.players?.length || 1))}
+                  initial={{ opacity: 0, scale: 0 }}
+                  animate={{ 
+                    opacity: 1, 
+                    scale: 1,
+                    ...getPositionStyle(index, Math.max(room.maxPlayers || 6, room.players?.length || 1))
+                  }}
+                  transition={{ 
+                    delay: index * 0.1,
+                    duration: 0.5,
+                    type: "spring",
+                    stiffness: 100
+                  }}
+                >
+                  <div className={`bg-black/60 backdrop-blur-sm rounded-xl border-2 transition-all ${
+                    playerPerspective === index 
+                      ? 'p-3 md:p-4 min-w-[8rem] md:min-w-[12rem] border-purple-500 shadow-xl shadow-purple-500/50 scale-110' 
+                      : (room.gameState?.currentPlayer || 0) === index 
+                        ? 'p-2 md:p-3 min-w-[6rem] md:min-w-[8rem] border-yellow-400 shadow-lg shadow-yellow-400/50' 
+                        : 'p-2 md:p-3 min-w-[6rem] md:min-w-[8rem] border-white/20'
+                  }`}>
+                    {/* Player Info */}
+                    <div className="text-center mb-1 md:mb-2">
+                      <div className="flex items-center justify-center gap-1 mb-1 flex-wrap">
+                        <span className="text-white font-bold text-xs md:text-sm truncate">{player.username}</span>
+                        {player.isBot && <span className="text-xs bg-blue-500 text-white px-1 rounded">BOT</span>}
+                      </div>
+                      <div className="flex items-center justify-center gap-1 text-yellow-400 text-xs md:text-sm">
+                        <Coins size={12} className="md:w-[14px] md:h-[14px]" />
+                        <span className="font-bold">${player.chips}</span>
+                      </div>
+                    </div>
+
+                    {/* Player Cards - Show based on perspective */}
+                    <div className="flex justify-center mb-1 md:mb-2">
+                      {playerPerspective === index && player.cards && player.cards.length === 2 ? (
+                        // Show actual cards for selected player
+                        <>
+                          {getCardDisplay(player.cards[0])}
+                          {getCardDisplay(player.cards[1])}
+                        </>
+                      ) : (room.status === 'playing' && player.cards && player.cards.length === 2) ? (
+                        // Show face-down cards during gameplay
+                        <>
+                          <div className="bg-blue-900 border-2 border-blue-700 rounded-lg p-1 md:p-2 m-0.5 md:m-1 shadow-lg min-w-[2rem] md:min-w-[3rem] text-center">
+                            <div className="text-lg md:text-2xl">🂠</div>
+                          </div>
+                          <div className="bg-blue-900 border-2 border-blue-700 rounded-lg p-1 md:p-2 m-0.5 md:m-1 shadow-lg min-w-[2rem] md:min-w-[3rem] text-center">
+                            <div className="text-lg md:text-2xl">🂠</div>
+                          </div>
+                        </>
+                      ) : player.folded ? (
+                        // Show folded cards
+                        <>
+                          <div className="bg-gray-600 rounded p-0.5 md:p-1 m-0.5 shadow text-xs text-white text-center min-w-[1rem] md:min-w-[1.5rem] opacity-50">
+                            ✕
+                          </div>
+                          <div className="bg-gray-600 rounded p-0.5 md:p-1 m-0.5 shadow text-xs text-white text-center min-w-[1rem] md:min-w-[1.5rem] opacity-50">
+                            ✕
+                          </div>
+                        </>
+                      ) : (
+                        // Show empty card slots when waiting
+                        <>
+                          <div className="bg-gray-700/50 border-2 border-gray-600 rounded-lg p-1 md:p-2 m-0.5 md:m-1 shadow-lg min-w-[2rem] md:min-w-[3rem] text-center opacity-30">
+                            <div className="text-xs md:text-sm text-gray-400">—</div>
+                          </div>
+                          <div className="bg-gray-700/50 border-2 border-gray-600 rounded-lg p-1 md:p-2 m-0.5 md:m-1 shadow-lg min-w-[2rem] md:min-w-[3rem] text-center opacity-30">
+                            <div className="text-xs md:text-sm text-gray-400">—</div>
+                          </div>
+                        </>
+                      )}
+                    </div>
+
+                    {/* Player Status */}
+                    <div className="text-center">
+                      <span className={`text-xs px-1 md:px-2 py-0.5 md:py-1 rounded ${
+                        player.status === 'active' ? 'bg-green-500/20 text-green-400' :
+                        player.status === 'folded' ? 'bg-red-500/20 text-red-400' :
+                        'bg-gray-500/20 text-gray-400'
+                      }`}>
+                        {player.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Action Notification Popup - Right side of player */}
+                  <AnimatePresence>
+                    {playerActions[index] && Date.now() - playerActions[index].timestamp < 1500 && (
+                      <motion.div
+                        initial={{ opacity: 0, x: -10, scale: 0.8 }}
+                        animate={{ opacity: 1, x: 0, scale: 1 }}
+                        exit={{ opacity: 0, x: 10, scale: 0.8 }}
+                        transition={{ duration: 0.2 }}
+                        className="absolute -right-2 top-1/2 -translate-y-1/2 translate-x-full z-50 pointer-events-none"
+                      >
+                        <div className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg font-bold text-[10px] sm:text-xs shadow-lg border-2 whitespace-nowrap ${
+                          playerActions[index].action.toLowerCase().includes('fold') ? 'bg-red-600 border-red-400 text-white' :
+                          playerActions[index].action.toLowerCase().includes('raise') || playerActions[index].action.toLowerCase().includes('all-in') ? 'bg-orange-600 border-orange-400 text-white' :
+                          playerActions[index].action.toLowerCase().includes('call') ? 'bg-green-600 border-green-400 text-white' :
+                          'bg-blue-600 border-blue-400 text-white'
+                        }`}>
+                          {playerActions[index].action.toUpperCase()}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Chat Bubble - Above player - EXTRA LARGE with player color */}
+                  <AnimatePresence>
+                    {activeBubbles.find(msg => room?.players.findIndex(p => p._id === msg.playerId) === index) && (() => {
+                      const bubble = activeBubbles.find(msg => room?.players.findIndex(p => p._id === msg.playerId) === index)
+                      if (!bubble) return null
+                      
+                      // Get player color (same as chat)
+                      const playerColors = [
+                        'from-blue-600 to-blue-700 border-blue-400',      // Player 0
+                        'from-green-600 to-green-700 border-green-400',   // Player 1
+                        'from-yellow-600 to-yellow-700 border-yellow-400',// Player 2
+                        'from-pink-600 to-pink-700 border-pink-400',      // Player 3
+                        'from-purple-600 to-purple-700 border-purple-400',// Player 4
+                        'from-orange-600 to-orange-700 border-orange-400',// Player 5
+                        'from-cyan-600 to-cyan-700 border-cyan-400',      // Player 6
+                        'from-red-600 to-red-700 border-red-400',         // Player 7
+                        'from-indigo-600 to-indigo-700 border-indigo-400' // Player 8
+                      ]
+                      const colorClass = playerColors[index % playerColors.length]
+                      
+                      return (
+                        <motion.div
+                          key={bubble.timestamp}
+                          initial={{ opacity: 0, y: 10, scale: 0.8 }}
+                          animate={{ opacity: 1, y: 0, scale: 1 }}
+                          exit={{ opacity: 0, y: -10, scale: 0.8 }}
+                          transition={{ duration: 0.3 }}
+                          className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-40 pointer-events-none"
+                        >
+                          <div className="relative">
+                            <div className={`bg-gradient-to-br ${colorClass} text-white px-5 py-3 rounded-2xl shadow-2xl text-base sm:text-lg md:text-xl max-w-[220px] sm:max-w-[280px] md:max-w-[320px] border-2 backdrop-blur-sm`}>
+                              <div className="font-bold flex items-center gap-1.5 mb-1.5">
+                                <span className="text-base">♠</span>
+                                <span className="truncate">{bubble.playerName}</span>
+                                <span className="text-base">♥</span>
+                              </div>
+                              <div className="break-words font-medium leading-relaxed text-base sm:text-lg">{bubble.message}</div>
+                            </div>
+                            {/* Tail pointing down - even bigger */}
+                            <div className={`absolute bottom-0 left-1/2 transform translate-y-full -translate-x-1/2 w-0 h-0 border-l-[12px] border-r-[12px] border-t-[14px] border-transparent ${colorClass.split(' ')[1].replace('to-', 'border-t-')}`}></div>
+                          </div>
+                        </motion.div>
+                      )
+                    })()}
+                  </AnimatePresence>
+                </motion.div>
+              ))}
+            </div>
+
+            {/* Player Action Controls - Vertical layout on RIGHT side */}
+            {room && playerPerspective !== null && room.players[playerPerspective] && (
+              <motion.div
+                initial={{ x: 100, opacity: 0 }}
+                animate={{ x: 0, opacity: 1 }}
+                className="fixed right-1 sm:right-2 top-[25%] sm:top-[30%] -translate-y-1/2 z-50"
+              >
+                <div className="bg-black/95 backdrop-blur-md rounded-lg sm:rounded-xl border-2 border-purple-500/50 p-1.5 sm:p-2 shadow-2xl">
+                  <div className="flex flex-col gap-1 sm:gap-1.5">
+                    <motion.button
+                      whileHover={{ scale: 1.05, x: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                      disabled={playerPerspective === null}
+                      className={`px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-md sm:rounded-lg font-bold text-[10px] sm:text-xs transition-colors shadow-lg min-w-[60px] sm:min-w-[70px] md:min-w-[80px] ${
+                        playerPerspective === null ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      Fold
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05, x: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                      disabled={playerPerspective === null}
+                      className={`px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-md sm:rounded-lg font-bold text-[10px] sm:text-xs transition-colors shadow-lg min-w-[60px] sm:min-w-[70px] md:min-w-[80px] ${
+                        playerPerspective === null ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      Check
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05, x: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                      disabled={playerPerspective === null}
+                      className={`px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 bg-green-600 hover:bg-green-500 text-white rounded-md sm:rounded-lg font-bold text-[10px] sm:text-xs transition-colors shadow-lg min-w-[60px] sm:min-w-[70px] md:min-w-[80px] whitespace-nowrap ${
+                        playerPerspective === null ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      Call ${room?.gameState?.currentBet || 0}
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05, x: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                      disabled={playerPerspective === null}
+                      className={`px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 bg-orange-600 hover:bg-orange-500 text-white rounded-md sm:rounded-lg font-bold text-[10px] sm:text-xs transition-colors shadow-lg min-w-[60px] sm:min-w-[70px] md:min-w-[80px] ${
+                        playerPerspective === null ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      Raise
+                    </motion.button>
+                    <motion.button
+                      whileHover={{ scale: 1.05, x: -5 }}
+                      whileTap={{ scale: 0.95 }}
+                      disabled={playerPerspective === null}
+                      className={`px-2 py-1.5 sm:px-3 sm:py-2 md:px-4 md:py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-md sm:rounded-lg font-bold text-[10px] sm:text-xs transition-colors shadow-lg min-w-[60px] sm:min-w-[70px] md:min-w-[80px] ${
+                        playerPerspective === null ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                    >
+                      All-In
+                    </motion.button>
+                  </div>
+                  <div className="text-center text-[9px] sm:text-[10px] text-white/90 mt-1.5 sm:mt-2 border-t border-purple-500/30 pt-1.5 sm:pt-2">
+                    {playerPerspective !== null && room.players[playerPerspective] ? (
+                      <>
+                        <div className="font-bold">Your Turn</div>
+                        <div className="text-[8px] sm:text-[9px]">{room.players[playerPerspective]?.chips || 0} chips</div>
+                      </>
+                    ) : (
+                      <div className="text-white/50 text-[8px] sm:text-[9px]">Select player</div>
+                    )}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
+            {/* Game Actions Log - HIDDEN, replaced by popup notifications */}
+            {false && gameActions.length > 0 && (
+              <div className="action-log absolute bottom-12 left-1 sm:bottom-14 sm:left-2 md:bottom-24 md:left-6 z-20 max-w-[120px] sm:max-w-[140px] md:max-w-xs">
+                <div className="bg-black/60 backdrop-blur-sm px-1.5 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 rounded-md md:rounded-lg border border-white/20">
+                  <div className="text-white text-[8px] sm:text-[9px] md:text-xs space-y-0.5 md:space-y-1">
+                    <div className="font-bold text-yellow-400 mb-0.5 md:mb-1">Actions:</div>
+                    <AnimatePresence>
+                      {gameActions.slice(-3).map((action, index) => (
+                        <motion.div
+                          key={`${action}-${index}`}
+                          initial={{ opacity: 0, x: -20 }}
+                          animate={{ opacity: 1, x: 0 }}
+                          exit={{ opacity: 0 }}
+                          className="text-green-200 truncate"
+                          title={action}
+                        >
+                          • {action}
+                        </motion.div>
+                      ))}
+                    </AnimatePresence>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Chat Button - LEFT side */}
+            <motion.button
+              whileHover={{ scale: 1.1, rotate: 5 }}
+              whileTap={{ scale: 0.9 }}
+              onClick={() => setShowChat(!showChat)}
+              className="absolute bottom-2 left-2 sm:bottom-3 sm:left-3 z-30 bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white p-2 sm:p-2.5 md:p-3 rounded-full shadow-2xl border-2 border-yellow-400/50 transition-all"
+            >
+              <MessageCircle size={16} className="sm:w-5 sm:h-5 md:w-6 md:h-6" />
+              {activeBubbles.length > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[8px] font-bold rounded-full w-4 h-4 flex items-center justify-center border border-white">
+                  {activeBubbles.length}
+                </span>
+              )}
+            </motion.button>
+
+            {/* Chat Panel - LEFT side */}
+            <AnimatePresence>
+              {showChat && (
+                <motion.div
+                  initial={{ opacity: 0, x: -20, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: -20, scale: 0.9 }}
+                  className="absolute bottom-14 left-2 sm:bottom-16 sm:left-3 z-30 bg-gradient-to-br from-gray-900 to-black border-2 border-green-500/50 backdrop-blur-sm rounded-xl shadow-2xl p-2 sm:p-3 w-36 sm:w-40 md:w-44"
+                >
+                  <div className="flex items-center justify-between mb-2 pb-2 border-b border-green-500/30">
+                    <h3 className="text-yellow-400 font-bold text-xs sm:text-sm flex items-center gap-1">
+                      <span>♠</span> Chat <span>♣</span>
+                    </h3>
+                    <button
+                      onClick={() => setShowChat(false)}
+                      className="text-white/60 hover:text-red-400 text-sm font-bold transition-colors"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  
+                  {/* Chat Messages History - Shorter height */}
+                  <div className="mb-2 max-h-24 sm:max-h-32 md:max-h-40 overflow-y-auto space-y-1.5 scrollbar-thin scrollbar-thumb-green-600 scrollbar-track-gray-800">
+                    {chatMessages.length === 0 ? (
+                      <p className="text-white/40 text-[9px] sm:text-[10px] text-center py-2">No messages yet</p>
+                    ) : (
+                      chatMessages.map((msg, index) => {
+                        // Get player index to determine color
+                        const playerIndex = room?.players.findIndex(p => p._id === msg.playerId) ?? -1
+                        const playerColors = [
+                          'text-blue-400',    // Player 0
+                          'text-green-400',   // Player 1
+                          'text-yellow-400',  // Player 2
+                          'text-pink-400',    // Player 3
+                          'text-purple-400',  // Player 4
+                          'text-orange-400',  // Player 5
+                          'text-cyan-400',    // Player 6
+                          'text-red-400',     // Player 7
+                          'text-indigo-400'   // Player 8
+                        ]
+                        const playerColor = playerIndex >= 0 ? playerColors[playerIndex % playerColors.length] : 'text-gray-400'
+                        
+                        return (
+                          <div key={index} className="bg-gradient-to-r from-green-900/40 to-black/60 rounded-lg px-2 py-1 border border-green-700/30">
+                            <div className={`font-bold text-[9px] sm:text-[10px] flex items-center gap-1 ${playerColor}`}>
+                              <span className="text-[7px]">♦</span>
+                              {msg.playerName}:
+                            </div>
+                            <div className="text-white text-[9px] sm:text-[10px] break-words">{msg.message}</div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                  
+                  {/* Input with send button inside */}
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      value={chatMessage}
+                      onChange={(e) => setChatMessage(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                      placeholder="Type message..."
+                      className="w-full bg-black/60 text-white px-3 pr-12 py-2.5 rounded-lg text-xs sm:text-sm border-2 border-green-600/50 focus:outline-none focus:border-green-400 placeholder-gray-500"
+                      maxLength={50}
+                    />
+                    <motion.button
+                      whileHover={{ scale: 1.1 }}
+                      whileTap={{ scale: 0.9 }}
+                      onClick={handleSendMessage}
+                      className="absolute right-2 bg-gradient-to-br from-green-600 to-green-700 hover:from-green-500 hover:to-green-600 text-white p-2 rounded-lg transition-all shadow-lg"
+                    >
+                      <Send size={18} />
+                    </motion.button>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Speech Bubbles now rendered inside each player component above */}
+
+            {/* Join Notification - Top Center */}
+            <AnimatePresence>
+              {joinNotification && (
+                <motion.div
+                  initial={{ opacity: 0, y: -50, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -50, scale: 0.8 }}
+                  transition={{ type: "spring", duration: 0.5 }}
+                  className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none"
+                >
+                  <div className="bg-gradient-to-r from-green-600 via-green-500 to-green-600 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-2xl shadow-2xl border-2 border-yellow-400 backdrop-blur-sm">
+                    <div className="flex items-center gap-3">
+                      <motion.div
+                        animate={{ rotate: [0, 10, -10, 0] }}
+                        transition={{ duration: 0.5, repeat: 3 }}
+                        className="text-2xl sm:text-3xl"
+                      >
+                        🎰
+                      </motion.div>
+                      <div>
+                        <div className="font-bold text-lg sm:text-xl text-yellow-200">
+                          {joinNotification.playerName} joined!
+                        </div>
+                        <div className="text-sm text-green-100">
+                          Welcome to the table
+                        </div>
+                      </div>
+                      <motion.div
+                        animate={{ rotate: [0, -10, 10, 0] }}
+                        transition={{ duration: 0.5, repeat: 3 }}
+                        className="text-2xl sm:text-3xl"
+                      >
+                        🃏
+                      </motion.div>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </>
+        )}
+      </div>
+      </div>
+      </div>
+    </div>
+  )
+}

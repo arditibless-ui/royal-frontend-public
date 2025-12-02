@@ -1,0 +1,50 @@
+'use client'
+
+import { useState, useEffect, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { ArrowLeft, Users, Coins, Eye, Settings, Play, Pause, Menu, MessageCircle, Send, BarChart3, Palette, History, Bell } from 'lucide-react'
+import { API_URL } from '../../constants/api'
+import { simulatePokerGame, type Player as AIPlayer, type GameState as AIGameState, type Card as AICard } from '../../services/pokerBotAI'
+import { soundManager } from '../../utils/sounds'
+import { io, Socket } from 'socket.io-client'
+import ConfettiCelebration from '../../components/ConfettiCelebration'
+import CircularTimer from '../../components/CircularTimer'
+import TableThemeSelector from '../../components/TableThemeSelector'
+import ChipAnimation from '../../components/ChipAnimation'
+import DealerButton from '../../components/DealerButton'
+import HandStrengthMeter from '../../components/HandStrengthMeter'
+import PotOddsDisplay from '../../components/PotOddsDisplay'
+import ActionHistory from '../../components/ActionHistory'
+import FloatingChipsBackground from '../../components/FloatingChipsBackground'
+import StatsDashboard from '../../components/StatsDashboard'
+import GameSettings from './GameSettings'
+import { useSwipeGesture } from '../hooks/useSwipeGesture'
+import PlayerSpotlight from '../../components/PlayerSpotlight'
+import TurnArrow from '../../components/TurnArrow'
+import AllInEffect from '../../components/AllInEffect'
+import CardBurnAnimation from '../../components/CardBurnAnimation'
+import FeltRipple from '../../components/FeltRipple'
+import NotificationCenter from '../../components/NotificationCenter'
+import PlayerContextMenu from '../../components/PlayerContextMenu'
+import IdlePlayerIndicator from '../../components/IdlePlayerIndicator'
+import LongPressHint from '../../components/LongPressHint'
+
+interface PokerTablePageProps {
+  roomCode: string
+  onBack: () => void
+  isAdminView?: boolean  // New prop to identify admin viewing mode
+}
+
+interface Player {
+  _id: string
+  username: string
+  chips: number
+  cards?: Card[]
+  position: number
+  status: string
+  isBot?: boolean
+  isReady?: boolean
+  currentBet?: number
+  folded?: boolean
+  gameIndex?: number // Gameplay turn order index
+  avatar?: string // Emoji avatar

@@ -1,0 +1,200 @@
+/* Enhanced Poker Table Design - Arkadium Style */
+
+/* Wood Border Effect */
+.poker-table-wood-border {
+  background: linear-gradient(145deg, 
+    #a0632c 0%, 
+    #7d4e2a 10%, 
+    #5a3821 20%, 
+    #4a2f1a 40%, 
+    #5a3821 60%, 
+    #7d4e2a 80%, 
+    #a0632c 100%
+  );
+  box-shadow: 
+    inset 0 0 20px rgba(0,0,0,0.8),
+    inset 0 2px 4px rgba(255,255,255,0.1),
+    inset 0 -2px 4px rgba(0,0,0,0.5),
+    0 8px 24px rgba(0,0,0,0.7),
+    0 4px 8px rgba(0,0,0,0.5);
+  border: 6px solid #8B6914;
+}
+
+/* Enhanced Felt Texture */
+.poker-table-felt {
+  background: radial-gradient(ellipse at center, 
+    #1a5c3a 0%, 
+    #0e4429 40%, 
+    #0a3520 70%, 
+    #062818 100%
+  );
+  box-shadow: 
+    inset 0 0 40px rgba(0,0,0,0.5),
+    inset 0 2px 3px rgba(255,255,255,0.05),
+    inset 0 -2px 6px rgba(0,0,0,0.4);
+  border: 2px solid #0a3520;
+}
+
+/* Player Avatar Styles */
+.player-avatar {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  box-shadow: 
+    0 4px 6px rgba(0,0,0,0.3),
+    inset 0 1px 1px rgba(255,255,255,0.2);
+}
+
+.player-avatar-current {
+  box-shadow: 
+    0 0 0 3px rgba(250, 204, 21, 0.5),
+    0 0 20px rgba(250, 204, 21, 0.6),
+    0 4px 6px rgba(0,0,0,0.3);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 3px rgba(250, 204, 21, 0.5),
+      0 0 20px rgba(250, 204, 21, 0.6),
+      0 4px 6px rgba(0,0,0,0.3);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 3px rgba(250, 204, 21, 0.8),
+      0 0 30px rgba(250, 204, 21, 0.9),
+      0 4px 6px rgba(0,0,0,0.3);
+  }
+}
+
+/* Dealer Button */
+.dealer-button {
+  background: linear-gradient(145deg, #ffd700, #ffed4e, #ffd700);
+  box-shadow: 
+    0 4px 8px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.4),
+    inset 0 -1px 2px rgba(0,0,0,0.2);
+  border: 3px solid white;
+  animation: dealer-spin 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+@keyframes dealer-spin {
+  0% {
+    transform: scale(0) rotate(-180deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Enhanced Chip Stack */
+.chip-stack {
+  position: relative;
+  display: flex;
+  gap: 2px;
+  align-items: flex-end;
+}
+
+.poker-chip {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.3);
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.3),
+    inset 0 1px 2px rgba(255,255,255,0.3);
+}
+
+.chip-red { background: linear-gradient(145deg, #ef4444, #b91c1c); }
+.chip-blue { background: linear-gradient(145deg, #3b82f6, #1e40af); }
+.chip-green { background: linear-gradient(145deg, #10b981, #047857); }
+.chip-black { background: linear-gradient(145deg, #1f2937, #000000); }
+.chip-yellow { background: linear-gradient(145deg, #fbbf24, #d97706); }
+.chip-purple { background: linear-gradient(145deg, #a855f7, #7c3aed); }
+.chip-orange { background: linear-gradient(145deg, #f97316, #c2410c); }
+
+/* Enhanced Player Card */
+.player-card-enhanced {
+  background: linear-gradient(145deg, rgba(17, 24, 39, 0.95), rgba(31, 41, 55, 0.98));
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.1);
+  transition: all 0.3s ease;
+}
+
+.player-card-current {
+  background: linear-gradient(145deg, rgba(34, 197, 94, 0.9), rgba(22, 163, 74, 0.95));
+  box-shadow: 
+    0 0 30px rgba(34, 197, 94, 0.5),
+    0 8px 32px rgba(0,0,0,0.4),
+    inset 0 1px 2px rgba(255,255,255,0.2);
+  transform: scale(1.05);
+}
+
+.player-card-folded {
+  background: linear-gradient(145deg, rgba(127, 29, 29, 0.8), rgba(153, 27, 27, 0.9));
+  opacity: 0.7;
+}
+
+/* Mobile Landscape Optimizations */
+@media (max-width: 896px) and (orientation: landscape) {
+  .poker-table-wood-border {
+    border: 4px solid #8B6914;
+  }
+  
+  .player-card-enhanced {
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.4);
+  }
+  
+  .poker-chip {
+    width: 16px;
+    height: 16px;
+  }
+  
+  .dealer-button {
+    border: 2px solid white;
+  }
+}
+
+/* Very Small Mobile Landscape */
+@media (max-width: 640px) and (orientation: landscape) {
+  .poker-table-wood-border {
+    border: 3px solid #8B6914;
+  }
+  
+  .player-card-enhanced {
+    border-radius: 10px;
+  }
+  
+  .poker-chip {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* Pot Display Enhancement */
+.pot-display-enhanced {
+  background: linear-gradient(145deg, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
+  backdrop-filter: blur(16px);
+  border: 2px solid rgba(234, 179, 8, 0.7);
+  box-shadow: 
+    0 8px 32px rgba(0,0,0,0.6),
+    inset 0 1px 2px rgba(255,255,255,0.1),
+    0 0 20px rgba(234, 179, 8, 0.3);
+  border-radius: 24px;
+}
+
+/* Card Enhancement */
+.card-enhanced {
+  box-shadow: 
+    0 4px 8px rgba(0,0,0,0.3),
+    0 2px 4px rgba(0,0,0,0.2),
+    inset 0 1px 1px rgba(255,255,255,0.1);
+  transition: transform 0.3s ease;
+}
+
+.card-enhanced:hover {
+  transform: translateY(-4px) scale(1.05);
+}
