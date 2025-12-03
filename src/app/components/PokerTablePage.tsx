@@ -40,7 +40,6 @@ interface Player {
   cards?: Card[]
   position: number
   status: string
-  isBot?: boolean
   isReady?: boolean
   currentBet?: number
   folded?: boolean
@@ -426,15 +425,15 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
           maxPlayers: 9,
           buyIn: 100,
           players: [
-            { _id: '1', username: 'Bot1', chips: 1000, position: 0, status: 'active', isBot: true, isReady: true },
-            { _id: '2', username: 'Bot2', chips: 1000, position: 1, status: 'active', isBot: true, isReady: true },
-            { _id: '3', username: 'Bot3', chips: 1000, position: 2, status: 'active', isBot: true, isReady: true },
-            { _id: '4', username: 'Bot4', chips: 1000, position: 3, status: 'active', isBot: true, isReady: true },
-            { _id: '5', username: 'Bot5', chips: 1000, position: 4, status: 'active', isBot: true, isReady: true },
-            { _id: '6', username: 'Bot6', chips: 1000, position: 5, status: 'active', isBot: true, isReady: true },
-            { _id: '7', username: 'Bot7', chips: 1000, position: 6, status: 'active', isBot: true, isReady: true },
-            { _id: '8', username: 'Bot8', chips: 1000, position: 7, status: 'active', isBot: true, isReady: true },
-            { _id: '9', username: 'Bot9', chips: 1000, position: 8, status: 'active', isBot: true, isReady: true },
+            { _id: '1', username: 'Player1', chips: 1000, position: 0, status: 'active', isReady: true },
+            { _id: '2', username: 'Player2', chips: 1000, position: 1, status: 'active', isReady: true },
+            { _id: '3', username: 'Player3', chips: 1000, position: 2, status: 'active', isReady: true },
+            { _id: '4', username: 'Player4', chips: 1000, position: 3, status: 'active', isReady: true },
+            { _id: '5', username: 'Player5', chips: 1000, position: 4, status: 'active', isReady: true },
+            { _id: '6', username: 'Player6', chips: 1000, position: 5, status: 'active', isReady: true },
+            { _id: '7', username: 'Player7', chips: 1000, position: 6, status: 'active', isReady: true },
+            { _id: '8', username: 'Player8', chips: 1000, position: 7, status: 'active', isReady: true },
+            { _id: '9', username: 'Player9', chips: 1000, position: 8, status: 'active', isReady: true },
           ],
           status: 'waiting',
           currentPot: 0
@@ -454,7 +453,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       if (response.ok) {
         const data = await response.json()
         console.log('Room data received:', data)
-        console.log('Players in room:', data.room?.players?.map((p: Player) => ({ id: p._id, name: p.username, isBot: p.isBot })))
+        console.log('Players in room:', data.room?.players?.map((p: Player) => ({ id: p._id, name: p.username })))
         
         // Detect new player joins
         if (data.room && data.room.players) {
@@ -508,15 +507,15 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
           maxPlayers: 9,
           buyIn: 100,
           players: [
-            { _id: '1', username: 'Bot1', chips: 1000, position: 0, status: 'active', isBot: true, isReady: true },
-            { _id: '2', username: 'Bot2', chips: 1000, position: 1, status: 'active', isBot: true, isReady: true },
-            { _id: '3', username: 'Bot3', chips: 1000, position: 2, status: 'active', isBot: true, isReady: true },
-            { _id: '4', username: 'Bot4', chips: 1000, position: 3, status: 'active', isBot: true, isReady: true },
-            { _id: '5', username: 'Bot5', chips: 1000, position: 4, status: 'active', isBot: true, isReady: true },
-            { _id: '6', username: 'Bot6', chips: 1000, position: 5, status: 'active', isBot: true, isReady: true },
-            { _id: '7', username: 'Bot7', chips: 1000, position: 6, status: 'active', isBot: true, isReady: true },
-            { _id: '8', username: 'Bot8', chips: 1000, position: 7, status: 'active', isBot: true, isReady: true },
-            { _id: '9', username: 'Bot9', chips: 1000, position: 8, status: 'active', isBot: true, isReady: true },
+            { _id: '1', username: 'Player1', chips: 1000, position: 0, status: 'active', isReady: true },
+            { _id: '2', username: 'Player2', chips: 1000, position: 1, status: 'active', isReady: true },
+            { _id: '3', username: 'Player3', chips: 1000, position: 2, status: 'active', isReady: true },
+            { _id: '4', username: 'Player4', chips: 1000, position: 3, status: 'active', isReady: true },
+            { _id: '5', username: 'Player5', chips: 1000, position: 4, status: 'active', isReady: true },
+            { _id: '6', username: 'Player6', chips: 1000, position: 5, status: 'active', isReady: true },
+            { _id: '7', username: 'Player7', chips: 1000, position: 6, status: 'active', isReady: true },
+            { _id: '8', username: 'Player8', chips: 1000, position: 7, status: 'active', isReady: true },
+            { _id: '9', username: 'Player9', chips: 1000, position: 8, status: 'active', isReady: true },
           ],
           status: 'waiting',
           currentPot: 0
@@ -655,6 +654,12 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     // Socket.io connection for real-time updates
     const token = localStorage.getItem('token')
     const socketUrl = API_URL.replace('/api', '')
+    
+    console.log('🔌 [PokerTablePage] Socket.IO connecting...');
+    console.log('  API_URL:', API_URL);
+    console.log('  socketUrl:', socketUrl);
+    console.log('  NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
+    
     const socket = io(socketUrl, {
       auth: { token },
       transports: ['websocket', 'polling']
@@ -708,6 +713,87 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
         gameIntervalRef.current = null
         console.log('🛑 Cleared simulation - backend room joined')
       }
+    })
+    
+    // Listen for ready status changes
+    socket.on('player-ready-changed', (data) => {
+      console.log('🔔 Player ready status changed:', data)
+      soundManager.playClick()
+      
+      // Update room state with new ready status
+      setRoom(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          players: prev.players.map(p => 
+            p._id === data.playerId 
+              ? { ...p, isReady: data.isReady }
+              : p
+          )
+        }
+      })
+      
+      // Show notification
+      setCenterNotification({
+        show: true,
+        message: `${data.username} is ${data.isReady ? 'ready' : 'not ready'}!`,
+        type: data.isReady ? 'success' : 'info'
+      })
+      
+      setTimeout(() => {
+        setCenterNotification({ show: false, message: '', type: 'info' })
+      }, 2000)
+    })
+    
+    // Listen for players joining the active game
+    socket.on('players-activated', (data) => {
+      console.log('🪑 Players activated:', data)
+      soundManager.playSuccess()
+      
+      // Show notification
+      setCenterNotification({
+        show: true,
+        message: data.message,
+        type: 'success'
+      })
+      
+      setTimeout(() => {
+        setCenterNotification({ show: false, message: '', type: 'info' })
+      }, 3000)
+    })
+    
+    // Listen for sitting out notification (joined mid-game)
+    socket.on('sitting-out-notification', (data) => {
+      console.log('🪑 Sitting out:', data)
+      soundManager.playClick()
+      
+      // Show notification
+      setCenterNotification({
+        show: true,
+        message: data.message,
+        type: 'info'
+      })
+      
+      setTimeout(() => {
+        setCenterNotification({ show: false, message: '', type: 'info' })
+      }, 5000) // Longer duration for important info
+    })
+    
+    // Auto-start game when all players are ready
+    socket.on('all-players-ready', (data) => {
+      console.log('🎮 All players ready! Auto-starting game...', data)
+      setCenterNotification({
+        show: true,
+        message: '🎮 All players ready! Starting game...',
+        type: 'success'
+      })
+      
+      // Auto-start the game after a brief delay
+      setTimeout(() => {
+        console.log('🚀 Emitting start-game event')
+        socket.emit('start-game', { roomCode })
+        setCenterNotification({ show: false, message: '', type: 'info' })
+      }, 1500)
     })
     
     socket.on('game-state-update', (data) => {
@@ -1101,9 +1187,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
         
         // Fallback to finding by playerId
         if (actionKey === -1 && action.playerId && currentRoom?.players) {
-          const player = currentRoom.players.find(p => 
-            (p.isBot ? `bot_${p.position}` : p._id) === action.playerId
-          )
+          const player = currentRoom.players.find(p => p._id === action.playerId)
           if (player) {
             actionKey = player.position
             console.log(`🔍 PlayerId match attempt: ${action.playerId} -> position ${actionKey}`)
@@ -1510,13 +1594,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
             console.log('✅ Found player! Setting perspective to position', player.position, 'for', player.username)
             setPlayerPerspective(player.position)
           } else {
-            console.log('❌ Player not found! userId:', userId)
-            // Fallback: find by username if ID doesn't match
-            const userByName = room.players.find(p => p.username === 'test2')
-            if (userByName) {
-              console.log('✅ Found by username! Setting perspective to position', userByName.position)
-              setPlayerPerspective(userByName.position)
-            }
+            console.log('❌ Player not found! userId:', userId, '- Cannot set perspective without matching player')
           }
         } catch (e) {
           console.error('Failed to decode token:', e)
@@ -1908,9 +1986,9 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       const currentPlayerIndex = currentRoom.gameState.currentPlayer
       const currentPlayer = currentRoom.players[currentPlayerIndex]
       
-      // SKIP if current player is a REAL PLAYER (not a bot)
-      if (currentPlayer && !currentPlayer.isBot) {
-        console.log(`⏸️ Waiting for real player ${currentPlayer.username}`)
+      // Always wait for real players - no automatic actions
+      if (currentPlayer) {
+        console.log(`⏸️ Waiting for player ${currentPlayer.username}`)
         return currentRoom
       }
       
@@ -2035,6 +2113,16 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     if (!currentPlayer) return false
     const myGameIndex = (currentPlayer as any).gameIndex
     return myGameIndex !== undefined && room.gameState.currentPlayer === myGameIndex
+  }
+
+  // Toggle ready status
+  const toggleReady = () => {
+    if (!socketRef.current || !roomCode) return
+    
+    console.log('🎮 Toggling ready status for room:', roomCode)
+    soundManager.playClick()
+    
+    socketRef.current.emit('toggle-ready', { roomCode })
   }
 
   // Swipe Gesture Handlers for Poker Actions
@@ -3148,6 +3236,33 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
           </div>
 
           <div className="header-controls flex items-center gap-1 sm:gap-1.5 md:gap-4 flex-wrap justify-end">
+            {/* Ready Button - For players waiting to start game */}
+            {!isAdminView && playerPerspective !== null && room && room.status !== 'playing' && (
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={toggleReady}
+                onMouseEnter={() => soundManager.playHover()}
+                className={`flex items-center gap-1 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg transition-all text-sm sm:text-base font-semibold whitespace-nowrap ${
+                  room.players.find(p => p.position === playerPerspective)?.isReady
+                    ? 'bg-green-600 hover:bg-green-500 text-white'
+                    : 'bg-yellow-600 hover:bg-yellow-500 text-white animate-pulse'
+                }`}
+              >
+                {room.players.find(p => p.position === playerPerspective)?.isReady ? (
+                  <>
+                    <span className="text-lg">✓</span>
+                    <span>Ready</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="text-lg">⏳</span>
+                    <span>Not Ready</span>
+                  </>
+                )}
+              </motion.button>
+            )}
+            
             {/* Stats Button - For players only */}
             {!isAdminView && playerPerspective !== null && (
               <>
@@ -3444,6 +3559,46 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                 
                 {/* Community Cards Area */}
                 <div className="absolute top-[40%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full px-4">
+                  {/* Ready Status Display - Show when game not started */}
+                  {room.status !== 'playing' && room.players.length >= 1 && (
+                    <div className="text-center mb-3">
+                      <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="inline-flex flex-col items-center bg-gradient-to-br from-yellow-600/90 to-orange-600/90 backdrop-blur-md px-6 py-3 rounded-xl border-2 border-yellow-400/50 shadow-2xl"
+                      >
+                        <div className="text-white text-sm font-semibold mb-1">
+                          {(() => {
+                            const readyCount = room.players.filter(p => p.isReady).length
+                            const totalPlayers = room.players.length
+                            const minPlayers = 2
+                            
+                            if (readyCount >= minPlayers && totalPlayers >= minPlayers) {
+                              return '🎮 Ready to Start!'
+                            } else if (totalPlayers < minPlayers) {
+                              return `⏳ Waiting for Players (${totalPlayers}/${minPlayers})`
+                            } else {
+                              return `⏳ Waiting for Ready (${readyCount}/${totalPlayers})`
+                            }
+                          })()}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {room.players.map((player, idx) => (
+                            <div key={player._id || idx} className="flex flex-col items-center">
+                              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold ${
+                                player.isReady 
+                                  ? 'bg-green-500 text-white' 
+                                  : 'bg-gray-400 text-white animate-pulse'
+                              }`}>
+                                {player.isReady ? '✓' : '⏳'}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </motion.div>
+                    </div>
+                  )}
+                  
                   {/* Pot Display - Enhanced with 3D Chips */}
                   <div className="pot-display text-center mb-1 sm:mb-2 md:mb-3 z-10 relative">
                     <div 
@@ -3642,14 +3797,19 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                               )}
                               
                               {/* Online Status Indicator */}
-                              <div className={`absolute bottom-0 right-0 w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-black/60 ${
-                                player.isBot ? 'bg-blue-400' : 'bg-green-400'
-                              } shadow-lg`} />
+                              <div className="absolute bottom-0 right-0 w-3 h-3 md:w-4 md:h-4 rounded-full border-2 border-black/60 bg-green-400 shadow-lg" />
                               
                               {/* Idle Overlay */}
                               {player.isIdle && (
                                 <div className="absolute inset-0 bg-black/50 backdrop-blur-sm rounded-full flex items-center justify-center">
                                   <span className="text-white text-xs font-bold">💤</span>
+                                </div>
+                              )}
+                              
+                              {/* Sitting Out Overlay (joined mid-game) */}
+                              {(player as any).isSittingOut && (
+                                <div className="absolute inset-0 bg-orange-600/80 backdrop-blur-sm rounded-full flex items-center justify-center">
+                                  <span className="text-white text-xs font-bold">⏳</span>
                                 </div>
                               )}
                             </div>
@@ -3666,9 +3826,22 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                         }`}>
                           {player.username}
                         </span>
-                        {player.isBot && (
-                          <span className="text-[10px] bg-gradient-to-r from-blue-500 to-cyan-500 text-white px-1.5 py-0.5 rounded-full font-bold shadow-lg">
-                            BOT
+                        
+                        {/* Ready Status Indicator (only show when game not started) */}
+                        {room.status !== 'playing' && (
+                          <span className={`text-xs px-1.5 py-0.5 rounded-full font-semibold ${
+                            player.isReady 
+                              ? 'bg-green-500/80 text-white' 
+                              : 'bg-yellow-500/80 text-white animate-pulse'
+                          }`}>
+                            {player.isReady ? '✓' : '⏳'}
+                          </span>
+                        )}
+                        
+                        {/* Sitting Out Badge (joined mid-game) */}
+                        {(player as any).isSittingOut && room.status === 'playing' && (
+                          <span className="text-xs px-1.5 py-0.5 rounded-full font-semibold bg-orange-500/80 text-white">
+                            Sitting Out
                           </span>
                         )}
                       </div>
