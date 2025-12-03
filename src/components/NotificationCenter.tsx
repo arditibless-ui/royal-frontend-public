@@ -32,7 +32,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
     // Connect to socket for real-time notifications
     const token = localStorage.getItem('token');
     if (token) {
-      socketRef.current = io('http://localhost:5001', {
+      socketRef.current = io(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001', {
         auth: { token }
       });
 
@@ -51,7 +51,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
   const fetchNotifications = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/notifications', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001') + '/api/notifications', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -70,7 +70,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
   const markAsRead = async (notificationId: string) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/notifications/${notificationId}/read`, {
+      const res = await fetch(`(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001') + '/api/notifications/${notificationId}/read`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -91,7 +91,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
   const markAllAsRead = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3001/api/notifications/read-all', {
+      const res = await fetch((process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001') + '/api/notifications/read-all', {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -110,7 +110,7 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
   const deleteNotification = async (notificationId: string) => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch(`http://localhost:3001/api/notifications/${notificationId}`, {
+      const res = await fetch(`(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001') + '/api/notifications/${notificationId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -323,3 +323,4 @@ export default function NotificationCenter({ isOpen, onClose }: NotificationCent
     </AnimatePresence>
   );
 }
+

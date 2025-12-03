@@ -591,8 +591,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
                       room.players?.length >= room.maxPlayers || joiningRoom || cooldownRemaining > 0 || (user?.credits || 0) < room.buyIn
                     }
                     onClick={() => {
+                      console.log('=== Join Room Debug ===');
+                      console.log('room object:', room);
+                      console.log('room.roomCode:', room.roomCode);
+                      console.log('room.code:', room.code);
                       soundManager.playButtonClick()
-                      joinRoom(room.roomCode, room.buyIn)
+                      joinRoom(room.roomCode || room.code, room.buyIn)
                     }}
                     onMouseEnter={() => soundManager.playHover()}
                     className={`flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 ${

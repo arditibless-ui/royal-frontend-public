@@ -164,17 +164,20 @@ export const mockAuth = {
 
 // Check if we should use mock API (when backend is not available)
 export const shouldUseMockApi = () => {
-  // Use mock API only if explicitly enabled or if no backend URL is configured
-  if (process.env.NEXT_PUBLIC_USE_MOCK_API === 'true') {
-    return true;
-  }
-  
-  // If backend URL is configured, use real API
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  if (apiUrl && apiUrl !== '') {
+  const useMockEnv = process.env.NEXT_PUBLIC_USE_MOCK_API;
+  
+  console.log('=== shouldUseMockApi Debug ===');
+  console.log('NEXT_PUBLIC_API_URL:', apiUrl);
+  console.log('NEXT_PUBLIC_USE_MOCK_API:', useMockEnv);
+  
+  // If backend URL is configured, use real API (unless explicitly disabled)
+  if (apiUrl && apiUrl !== '' && useMockEnv !== 'true') {
+    console.log('Backend URL configured, using real API');
     return false;
   }
   
-  // Default to mock API if no backend URL is set
+  // Use mock API if explicitly enabled or no backend URL
+  console.log('Using mock API');
   return true;
 };

@@ -122,6 +122,9 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     // Setup socket connection
     const token = localStorage.getItem('token')
     const socketUrl = API_URL.replace('/api', '')
+    console.log('🔌 Socket.IO URL from API_URL:', API_URL, '→', socketUrl);
+    console.log('🔌 NEXT_PUBLIC_API_URL env:', process.env.NEXT_PUBLIC_API_URL);
+    
     const socket = io(socketUrl, {
       auth: { token },
       transports: ['websocket', 'polling']

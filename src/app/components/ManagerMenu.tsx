@@ -37,7 +37,6 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
   const [smallBlind, setSmallBlind] = useState('5')
   const [bigBlind, setBigBlind] = useState('10')
   const [isPrivate, setIsPrivate] = useState(false)
-  const [botCount, setBotCount] = useState('0')
   const [gameMode, setGameMode] = useState<'cash' | 'tournament'>('cash')
   const [blindLevelDuration, setBlindLevelDuration] = useState('10')
   const [prizeStructure, setPrizeStructure] = useState({ first: '50', second: '30', third: '20' })
@@ -208,7 +207,6 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
     const buyInNum = parseInt(buyIn)
     const smallBlindNum = parseInt(smallBlind)
     const bigBlindNum = parseInt(bigBlind)
-    const botCountNum = parseInt(botCount)
 
     if (isNaN(maxPlayersNum) || maxPlayersNum < 2 || maxPlayersNum > 9) {
       showNotification('Max players must be between 2 and 9', 'error')
@@ -227,11 +225,6 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
 
     if (bigBlindNum <= smallBlindNum) {
       showNotification('Big blind must be greater than small blind', 'error')
-      return
-    }
-
-    if (isNaN(botCountNum) || botCountNum < 0 || botCountNum >= maxPlayersNum) {
-      showNotification(`Bot count must be between 0 and ${maxPlayersNum - 1}`, 'error')
       return
     }
 
@@ -264,9 +257,6 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
     try {
       const token = localStorage.getItem('token')
       
-      // Use create-bot-room endpoint if bots are requested
-      const endpoint = botCountNum > 0 ? '/api/games/create-bot-room' : '/api/games/rooms'
-      
       const requestBody: any = {
         roomName: roomName.trim(),
         maxPlayers: maxPlayersNum,
@@ -274,7 +264,6 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
         smallBlind: smallBlindNum,
         bigBlind: bigBlindNum,
         isPrivate,
-        botCount: botCountNum,
         gameMode
       }
 
@@ -290,7 +279,7 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
         }
       }
       
-      const response = await fetch(`${API_URL}${endpoint}`, {
+      const response = await fetch(`${API_URL}/api/games/rooms`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -310,7 +299,6 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
         setSmallBlind('5')
         setBigBlind('10')
         setIsPrivate(false)
-        setBotCount('0')
         setGameMode('cash')
         setBlindLevelDuration('10')
         setPrizeStructure({ first: '50', second: '30', third: '20' })
@@ -1053,26 +1041,6 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
               </motion.div>
             )}
 
-            {/* Bot Count Input */}
-            <div>
-              <label className="block text-white text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">
-                Number of Bots (Optional)
-              </label>
-              <input
-                type="number"
-                value={botCount}
-                onChange={(e) => setBotCount(e.target.value)}
-                placeholder="0 for no bots"
-                min="0"
-                max="8"
-                className="w-full px-3 sm:px-4 py-2 sm:py-3 bg-black/40 border border-orange-500/30 rounded-lg text-white text-sm sm:text-base placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
-                disabled={loading}
-              />
-              <p className="text-orange-200/70 text-xs mt-1">
-                Add bot players to the room for testing. Leave at 0 for player-only room.
-              </p>
-            </div>
-
             {/* Private Room Toggle */}
             <div className="bg-orange-500/10 border border-orange-500/30 rounded-lg p-3 sm:p-4">
               <label className="flex items-center gap-3 cursor-pointer">
@@ -1093,7 +1061,7 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
             {/* Info Box */}
             <div className="bg-blue-500/10 border border-blue-500/30 rounded-lg p-3 sm:p-4">
               <p className="text-blue-300 text-xs sm:text-sm">
-                <strong>Note:</strong> Rooms created by you will only be visible to players you've created. Other managers cannot see or access your rooms. You can add bot players for testing.
+                <strong>Note:</strong> Rooms created by you will only be visible to players you've created. Other managers cannot see or access your rooms.
               </p>
             </div>
 
@@ -1184,11 +1152,6 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
                             <span className="text-xs px-2 py-0.5 rounded bg-purple-500/20 text-purple-300 border border-purple-500/30">
                               {room.code}
                             </span>
-                            {room.isBotRoom && (
-                              <span className="text-xs px-2 py-0.5 rounded bg-orange-500/20 text-orange-300 border border-orange-500/30">
-                                Bot Room
-                              </span>
-                            )}
                           </div>
                           <div className="flex items-center gap-4 text-xs text-gray-400">
                             <span className="flex items-center gap-1">

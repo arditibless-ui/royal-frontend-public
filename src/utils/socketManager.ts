@@ -41,6 +41,9 @@ class SocketManager {
       this.roomCode = roomCode || null;
       this.isIntentionalDisconnect = false;
 
+      console.log('🔌 Creating Socket.IO connection to:', url);
+      console.log('With auth token:', token ? 'Present' : 'Missing');
+
       this.socket = io(url, {
         auth: { token },
         reconnection: false, // We handle reconnection manually
@@ -168,6 +171,8 @@ class SocketManager {
 
       // Create new connection
       const url = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5001';
+      console.log('🔌 Socket.IO connecting to:', url);
+      console.log('Environment NEXT_PUBLIC_API_URL:', process.env.NEXT_PUBLIC_API_URL);
       await this.connect(url, token, this.roomCode || undefined);
       
       this.emit('reconnected');

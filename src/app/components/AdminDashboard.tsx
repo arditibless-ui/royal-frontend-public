@@ -468,56 +468,6 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
     }
   }
 
-  const createBotRoom = async (botCount: number = 9) => {
-    setLoading(true)
-    
-    try {
-      const token = localStorage.getItem('token')
-      const response = await fetch(`${API_URL}/api/games/create-bot-room`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          maxPlayers: botCount,
-          buyIn: 100,
-          botCount: botCount
-        }),
-      })
-
-      const data = await response.json()
-      
-      if (response.ok && data.room) {
-        await fetchRooms()
-        
-        setNotification({ 
-          show: true, 
-          message: `Bot room with ${botCount} bot${botCount > 1 ? 's' : ''} successfully created!`, 
-          code: data.room.code,
-          type: 'success'
-        })
-        setTimeout(() => setNotification({ show: false, message: '', type: 'success' }), 5000)
-      } else {
-        setNotification({ 
-          show: true, 
-          message: data.message || 'Failed to create bot room',
-          type: 'error'
-        })
-        setTimeout(() => setNotification({ show: false, message: '', type: 'error' }), 3000)
-      }
-    } catch (err) {
-      setNotification({ 
-        show: true, 
-        message: 'Failed to create bot room',
-        type: 'error'
-      })
-      setTimeout(() => setNotification({ show: false, message: '', type: 'error' }), 3000)
-    } finally {
-      setLoading(false)
-    }
-  }
-
   const deleteRoom = async (roomId: string) => {
     try {
       const token = localStorage.getItem('token')
@@ -1147,27 +1097,15 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
         </div>
       ) : (
         <div className="min-h-screen p-4">
-      {/* Mobile Portrait Warning for Admin Dashboard */}
-      <div className="portrait-warning hidden fixed inset-0 bg-green-900 flex-col items-center justify-center z-50 text-white p-6 text-center sm:!hidden">
-        <div className="text-6xl mb-4">🎮</div>
-        <h2 className="text-2xl font-bold mb-4">Rotate for Better Experience</h2>
-        <p className="text-lg mb-6">
-          Admin Dashboard works better in landscape mode for managing poker games.
-        </p>
-        <div className="text-4xl animate-pulse">🔄</div>
-        <p className="text-sm mt-4 opacity-75">
-          Turn your device sideways for full controls
-        </p>
-      </div>
-
-      {/* Landscape Content */}
-      <div className="landscape-content min-h-[100dvh]">
+      
+      {/* Admin Dashboard Content - Fully Responsive */}
+      <div className="min-h-[100dvh]">
       
       {/* Header */}
-      <div className="flex justify-between items-center mb-6 landscape:mb-3 flex-wrap gap-4 landscape:gap-2">
+      <div className="flex justify-between items-center mb-4 sm:mb-6 flex-wrap gap-3 sm:gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl lg:text-4xl landscape:text-lg font-bold text-white mb-2 landscape:mb-1 truncate">Admin Dashboard</h1>
-          <p className="text-green-200 text-sm lg:text-base landscape:text-xs">System Administrator Panel</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2 truncate">Admin Dashboard</h1>
+          <p className="text-green-200 text-xs sm:text-sm lg:text-base">System Administrator Panel</p>
         </div>
         
         <motion.button
@@ -1419,32 +1357,6 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                   <Plus size={16} className="sm:w-[18px] sm:h-[18px]" />
                   <span className="text-sm sm:text-base">Create Room</span>
                 </button>
-                <button
-                  onClick={() => {
-                    soundManager.playClick()
-                    createBotRoom(2)
-                  }}
-                  onMouseEnter={() => soundManager.playHover()}
-                  disabled={loading}
-                  className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-orange-600 text-white rounded-lg hover:bg-orange-500 transition-colors text-sm sm:text-base flex-1 sm:flex-none justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Create a testing room with 2 bots to test countdown"
-                >
-                  <Users size={16} className="sm:w-[18px] sm:h-[18px]" />
-                  <span className="text-sm sm:text-base">2 Bots</span>
-                </button>
-                <button
-                  onClick={() => {
-                    soundManager.playClick()
-                    createBotRoom(9)
-                  }}
-                  onMouseEnter={() => soundManager.playHover()}
-                  disabled={loading}
-                  className="flex items-center gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-2.5 bg-teal-600 text-white rounded-lg hover:bg-teal-500 transition-colors text-sm sm:text-base flex-1 sm:flex-none justify-center disabled:opacity-50 disabled:cursor-not-allowed"
-                  title="Create a testing room with 9 AI bots"
-                >
-                  <Users size={16} className="sm:w-[18px] sm:h-[18px]" />
-                  <span className="text-sm sm:text-base">9 Bots</span>
-                </button>
               </div>
             </div>
             
@@ -1546,7 +1458,6 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                               {room.players.map((player: any, index: number) => (
                                 <div key={index} className="bg-black/20 px-2 sm:px-3 py-1.5 sm:py-2 rounded text-xs sm:text-sm text-gray-300 flex items-center gap-1 flex-wrap">
                                   <span className="truncate">{player.username || `Player ${index + 1}`}</span>
-                                  {player.isBot && <span className="text-[10px] sm:text-xs bg-blue-500 text-white px-1 rounded whitespace-nowrap">BOT</span>}
                                 </div>
                               ))}
                             </div>
