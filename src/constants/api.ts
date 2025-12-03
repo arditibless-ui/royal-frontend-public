@@ -1,5 +1,5 @@
 // API URL configuration for different environments
-// Force production backend URL if not in development
+// Force production backend URL if not in development (updated)
 export const API_URL = process.env.NEXT_PUBLIC_API_URL || 
   (typeof window !== 'undefined' && window.location.hostname === 'localhost' 
     ? 'http://localhost:5001' 
