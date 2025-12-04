@@ -994,7 +994,9 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                 ? newPlayer.cards 
                 : (oldPlayer.cards || []),
               // Preserve isReady status since game-state-update doesn't include it
-              isReady: oldPlayer.isReady ?? false
+              isReady: oldPlayer.isReady ?? false,
+              // Ensure folded status is explicitly set from new data
+              folded: newPlayer.folded ?? oldPlayer.folded ?? false
             };
           }
           return newPlayer;
@@ -1623,6 +1625,8 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
         socketRef.current.off('game-action-broadcast')
         socketRef.current.off('player-joined')
         socketRef.current.off('room-message')
+        socketRef.current.off('player-left')
+        socketRef.current.off('player-disconnected')
         socketRef.current.off('player-turn')
         socketRef.current.off('player-action')
         socketRef.current.off('round-complete')
