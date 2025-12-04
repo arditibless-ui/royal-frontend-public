@@ -779,6 +779,38 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       }, 5000) // Longer duration for important info
     })
     
+    // Listen for player-joined event to update room state
+    socket.on('player-joined', async (data) => {
+      console.log('👥 Player joined room:', data)
+      soundManager.playSuccess()
+      
+      // Refetch room data to get updated player list
+      try {
+        const token = localStorage.getItem('token')
+        const response = await fetch(`${API_URL}/api/games/rooms/${roomCode}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        if (response.ok) {
+          const roomData = await response.json()
+          console.log('🔄 Updated room data after player join:', roomData.room.players.length, 'players')
+          updateRoom(() => roomData.room)
+        }
+      } catch (err) {
+        console.error('Failed to fetch updated room data:', err)
+      }
+      
+      // Show notification
+      setCenterNotification({
+        show: true,
+        message: data.message || `${data.player?.username || 'A player'} joined!`,
+        type: 'success'
+      })
+      
+      setTimeout(() => {
+        setCenterNotification({ show: false, message: '', type: 'info' })
+      }, 3000)
+    })
+    
     // Auto-start game when all players are ready
     socket.on('all-players-ready', (data) => {
       console.log('🎮 All players ready! Auto-starting game...', data)
