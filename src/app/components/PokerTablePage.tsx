@@ -930,7 +930,9 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
               // BUT we must allow clearing cards if the game state implies it (e.g. new round)
               cards: (newPlayer.cards && newPlayer.cards.length > 0) 
                 ? newPlayer.cards 
-                : (oldPlayer.cards || [])
+                : (oldPlayer.cards || []),
+              // Preserve isReady status since game-state-update doesn't include it
+              isReady: oldPlayer.isReady ?? false
             };
           }
           return newPlayer;
@@ -940,7 +942,8 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
           ...prev,
           gameState: data.gameState,
           players: updatedPlayers,
-          currentPot: data.gameState.pot
+          currentPot: data.gameState.pot,
+          status: data.gameState.status || prev.status // Sync room status with gameState status
         };
       });
       
