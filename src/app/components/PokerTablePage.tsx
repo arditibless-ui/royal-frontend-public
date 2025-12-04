@@ -726,7 +726,8 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
         return {
           ...prev,
           players: prev.players.map(p => 
-            p._id === data.playerId 
+            // Match by position since backend sends it, more reliable than ID comparison
+            p.position === data.position
               ? { ...p, isReady: data.isReady }
               : p
           )
