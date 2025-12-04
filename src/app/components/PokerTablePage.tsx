@@ -3303,8 +3303,8 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
           <div className="header-controls flex items-center gap-1 sm:gap-1.5 md:gap-4 flex-wrap justify-end">
             {/* Ready Button - For players waiting to start game */}
             {!isAdminView && playerPerspective !== null && room && room.status !== 'playing' && (() => {
-              // Find current player by currentUserId for reliability
-              const currentPlayer = room.players.find(p => p._id === currentUserId);
+              // Find current player by their position (most reliable)
+              const currentPlayer = room.players.find(p => p.position === playerPerspective);
               const isReady = currentPlayer?.isReady || false;
               
               return (
