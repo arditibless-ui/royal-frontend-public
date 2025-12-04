@@ -811,13 +811,42 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       }, 3000)
     })
     
+    // Listen for chat messages from other players
+    socket.on('room-message', (data) => {
+      console.log('💬 Chat message received:', data)
+      
+      // Add message to chat history
+      setChatHistory(prev => [...prev, {
+        username: data.username,
+        message: data.message,
+        timestamp: data.timestamp
+      }])
+      
+      // Show chat bubble for other players' messages (not own messages)
+      if (data.username !== profile?.username) {
+        const bubble = {
+          id: Date.now(),
+          username: data.username,
+          message: data.message,
+          timestamp: Date.now()
+        }
+        
+        setActiveBubbles(prev => [...prev, bubble])
+        
+        // Auto-remove bubble after 5 seconds
+        setTimeout(() => {
+          setActiveBubbles(prev => prev.filter(b => b.id !== bubble.id))
+        }, 5000)
+      }
+    })
+    
     // Auto-start game when all players are ready
     socket.on('all-players-ready', (data) => {
       console.log('🎮 All players ready! Auto-starting game...', data)
       setCenterNotification({
         show: true,
-        message: '🎮 All players ready! Starting game...',
-        type: 'success'
+        message: '✓ All ready! Starting...',
+        type: 'info'
       })
       
       // Auto-start the game after a brief delay
@@ -3272,19 +3301,24 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
 
           <div className="header-controls flex items-center gap-1 sm:gap-1.5 md:gap-4 flex-wrap justify-end">
             {/* Ready Button - For players waiting to start game */}
-            {!isAdminView && playerPerspective !== null && room && room.status !== 'playing' && (
+            {!isAdminView && playerPerspective !== null && room && room.status !== 'playing' && (() => {
+              // Find current player by userId for reliability
+              const currentPlayer = room.players.find(p => p._id === userId);
+              const isReady = currentPlayer?.isReady || false;
+              
+              return (
               <motion.button
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={toggleReady}
                 onMouseEnter={() => soundManager.playHover()}
                 className={`flex items-center gap-1 px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg transition-all text-sm sm:text-base font-semibold whitespace-nowrap ${
-                  room.players.find(p => p.position === playerPerspective)?.isReady
+                  isReady
                     ? 'bg-green-600 hover:bg-green-500 text-white'
                     : 'bg-yellow-600 hover:bg-yellow-500 text-white animate-pulse'
                 }`}
               >
-                {room.players.find(p => p.position === playerPerspective)?.isReady ? (
+                {isReady ? (
                   <>
                     <span className="text-lg">✓</span>
                     <span>Ready</span>
@@ -3296,7 +3330,8 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   </>
                 )}
               </motion.button>
-            )}
+              );
+            })()}
             
             {/* Stats Button - For players only */}
             {!isAdminView && playerPerspective !== null && (
