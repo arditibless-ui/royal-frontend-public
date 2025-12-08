@@ -30,14 +30,50 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
     vpip: 0,
     pfr: 0
   })
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Load stats from localStorage
-    const savedStats = localStorage.getItem(`poker_stats_${playerName}`)
-    if (savedStats) {
-      setStats(JSON.parse(savedStats))
+    // Fetch stats from API
+    const fetchStats = async () => {
+      try {
+        setLoading(true)
+        const token = localStorage.getItem('token')
+        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        
+        const response = await fetch(`${API_URL}/api/users/statistics`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+
+        if (response.ok) {
+          const data = await response.json()
+          console.log('📊 Statistics fetched:', data)
+          
+          // Map backend stats to frontend format
+          setStats({
+            handsPlayed: data.statistics?.handsPlayed || data.statistics?.totalGames || 0,
+            handsWon: data.statistics?.wins || 0,
+            biggestWin: data.statistics?.biggestWin?.amount || data.statistics?.biggestWin || 0,
+            biggestLoss: data.statistics?.biggestLoss?.amount || data.statistics?.biggestLoss || 0,
+            totalWinnings: data.statistics?.totalWinnings || 0,
+            vpip: 0, // Not tracked yet
+            pfr: 0   // Not tracked yet
+          })
+        } else {
+          console.error('Failed to fetch statistics:', response.statusText)
+        }
+      } catch (error) {
+        console.error('Error fetching statistics:', error)
+      } finally {
+        setLoading(false)
+      }
     }
-  }, [playerName])
+
+    if (isVisible) {
+      fetchStats()
+    }
+  }, [isVisible])
 
   if (!isVisible) return null
 
@@ -78,6 +114,13 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
 
           {/* Stats Content */}
           <div className="p-6 space-y-6">
+            {loading ? (
+              <div className="text-center py-8">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
+                <p className="text-gray-400 mt-4">Loading statistics...</p>
+              </div>
+            ) : (
+              <>
             {/* Player Name */}
             <div className="text-center">
               <h3 className="text-2xl font-bold text-white mb-1">{playerName}</h3>
@@ -165,6 +208,8 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
                 <span className="text-purple-400 font-bold">{stats.pfr.toFixed(1)}%</span>
               </div>
             </div>
+            </>
+            )}
           </div>
         </motion.div>
       </motion.div>
