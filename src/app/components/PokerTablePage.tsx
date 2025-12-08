@@ -3387,7 +3387,6 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   className="flex items-center gap-1 px-2 py-1 sm:px-2 sm:py-1.5 md:px-3 md:py-2 bg-black/40 text-white rounded-lg hover:bg-black/60 transition-colors"
                 >
                   <Menu size={14} className="sm:w-4 sm:h-4" />
-                  <span className="hidden portrait:inline text-xs">Menu</span>
                 </motion.button>
 
                 {/* Dropdown Menu */}
@@ -3397,60 +3396,8 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                       initial={{ opacity: 0, y: -10 }}
                       animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, y: -10 }}
-                      className="absolute right-0 top-full mt-1 bg-black/95 backdrop-blur-sm rounded-lg border border-white/20 p-2 min-w-[200px] shadow-2xl z-[100]"
-                      onClick={(e) => e.stopPropagation()}
+                      className="absolute right-0 top-full mt-1 bg-black/95 backdrop-blur-sm rounded-lg border border-white/20 p-2 min-w-[160px] shadow-2xl z-[100]"
                     >
-                      {/* Action Buttons for Portrait Mode Only */}
-                      <div className="portrait:block landscape:hidden space-y-2 pb-2 border-b border-white/10 mb-2">
-                        <button
-                          onClick={() => {
-                            soundManager.playClick()
-                            handleDealCards()
-                            setShowMenu(false)
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 bg-green-600/80 hover:bg-green-500 text-white rounded-lg transition-colors text-sm"
-                        >
-                          <span>🃏</span>
-                          <span>Deal Cards</span>
-                        </button>
-                        
-                        <button
-                          onClick={() => {
-                            soundManager.playClick()
-                            handleNextRound()
-                            setShowMenu(false)
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 bg-blue-600/80 hover:bg-blue-500 text-white rounded-lg transition-colors text-sm"
-                        >
-                          <span>⏭️</span>
-                          <span>Next Round</span>
-                        </button>
-                        
-                        <button
-                          onClick={() => {
-                            soundManager.playClick()
-                            handleShowdown()
-                            setShowMenu(false)
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 bg-purple-600/80 hover:bg-purple-500 text-white rounded-lg transition-colors text-sm"
-                        >
-                          <span>🏆</span>
-                          <span>Showdown</span>
-                        </button>
-                        
-                        <button
-                          onClick={() => {
-                            soundManager.playClick()
-                            handleResetGame()
-                            setShowMenu(false)
-                          }}
-                          className="w-full flex items-center gap-2 px-3 py-2 bg-red-600/80 hover:bg-red-500 text-white rounded-lg transition-colors text-sm"
-                        >
-                          <span>🔄</span>
-                          <span>Reset Game</span>
-                        </button>
-                      </div>
-
                       {/* Player Perspective Selector */}
                       {room && room.players.length > 0 && (
                         <div className="mb-2">
