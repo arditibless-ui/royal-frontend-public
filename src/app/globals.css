@@ -26,6 +26,18 @@ html {
   overflow: auto;
 }
 
+/* Disable scrolling ONLY on poker table page */
+body.poker-table-active {
+  overflow: hidden;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+}
+
+html:has(body.poker-table-active) {
+  overflow: hidden;
+}
+
 /* Container query for poker table - adapts to parent container */
 .poker-table-wrapper {
   container-type: size;
