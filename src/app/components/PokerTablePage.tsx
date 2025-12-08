@@ -693,6 +693,30 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     // Add class to body to disable scrolling on poker table
     document.body.classList.add('poker-table-active');
     
+    // Request fullscreen for better mobile experience
+    const enterFullscreen = async () => {
+      try {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+          await elem.requestFullscreen();
+        } else if ((elem as any).webkitRequestFullscreen) {
+          // Safari
+          await (elem as any).webkitRequestFullscreen();
+        } else if ((elem as any).mozRequestFullScreen) {
+          // Firefox
+          await (elem as any).mozRequestFullScreen();
+        }
+        console.log('✅ Entered fullscreen mode');
+      } catch (err) {
+        console.log('⚠️ Fullscreen not available or denied:', err);
+      }
+    };
+    
+    // Try to enter fullscreen after a short delay (needs user interaction)
+    const fullscreenTimeout = setTimeout(() => {
+      enterFullscreen();
+    }, 1000);
+    
     fetchRoom()
     fetchTheme()
     fetchPlayerBalances()
@@ -1711,6 +1735,18 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       
       // Remove poker table active class to re-enable scrolling
       document.body.classList.remove('poker-table-active');
+      
+      // Exit fullscreen when leaving
+      if (document.fullscreenElement || (document as any).webkitFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if ((document as any).webkitExitFullscreen) {
+          (document as any).webkitExitFullscreen();
+        }
+      }
+      
+      // Clear fullscreen timeout
+      if (fullscreenTimeout) clearTimeout(fullscreenTimeout)
       
       // Clear credit polling interval
       if (creditInterval) clearInterval(creditInterval)
@@ -3380,6 +3416,42 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
               >
                 <Settings size={14} className="sm:w-4 sm:h-4 md:w-[18px] md:h-[18px]" />
                 <span className="hidden lg:inline">Settings</span>
+              </motion.button>
+
+              {/* Fullscreen Button */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={async () => {
+                  soundManager.playClick()
+                  try {
+                    const elem = document.documentElement;
+                    if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+                      // Enter fullscreen
+                      if (elem.requestFullscreen) {
+                        await elem.requestFullscreen();
+                      } else if ((elem as any).webkitRequestFullscreen) {
+                        await (elem as any).webkitRequestFullscreen();
+                      }
+                    } else {
+                      // Exit fullscreen
+                      if (document.exitFullscreen) {
+                        await document.exitFullscreen();
+                      } else if ((document as any).webkitExitFullscreen) {
+                        await (document as any).webkitExitFullscreen();
+                      }
+                    }
+                  } catch (err) {
+                    console.error('Fullscreen error:', err);
+                  }
+                }}
+                onMouseEnter={() => soundManager.playHover()}
+                className="adaptive-button flex items-center gap-1 bg-black/40 text-white rounded-lg hover:bg-black/60 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                </svg>
+                <span className="hidden lg:inline">Fullscreen</span>
               </motion.button>
 
               {/* Notification Center */}
