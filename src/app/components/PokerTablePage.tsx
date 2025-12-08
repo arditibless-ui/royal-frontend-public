@@ -693,30 +693,6 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     // Add class to body to disable scrolling on poker table
     document.body.classList.add('poker-table-active');
     
-    // Request fullscreen for better mobile experience
-    const enterFullscreen = async () => {
-      try {
-        const elem = document.documentElement;
-        if (elem.requestFullscreen) {
-          await elem.requestFullscreen();
-        } else if ((elem as any).webkitRequestFullscreen) {
-          // Safari
-          await (elem as any).webkitRequestFullscreen();
-        } else if ((elem as any).mozRequestFullScreen) {
-          // Firefox
-          await (elem as any).mozRequestFullScreen();
-        }
-        console.log('✅ Entered fullscreen mode');
-      } catch (err) {
-        console.log('⚠️ Fullscreen not available or denied:', err);
-      }
-    };
-    
-    // Try to enter fullscreen after a short delay (needs user interaction)
-    const fullscreenTimeout = setTimeout(() => {
-      enterFullscreen();
-    }, 1000);
-    
     fetchRoom()
     fetchTheme()
     fetchPlayerBalances()
@@ -1745,9 +1721,6 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
         }
       }
       
-      // Clear fullscreen timeout
-      if (fullscreenTimeout) clearTimeout(fullscreenTimeout)
-      
       // Clear credit polling interval
       if (creditInterval) clearInterval(creditInterval)
       
@@ -2751,7 +2724,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
   }
 
   return (
-    <div className="poker-table-wrapper">
+    <div id="poker-fullscreen-container" className="poker-table-wrapper">
       {/* Enhanced Visual Components */}
       <ConfettiCelebration isActive={showConfetti} duration={3000} />
       
@@ -3426,20 +3399,30 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   soundManager.playClick()
                   console.log('🔍 Fullscreen button clicked')
                   try {
-                    const elem = document.documentElement;
+                    const elem = document.getElementById('poker-fullscreen-container');
+                    if (!elem) {
+                      console.error('❌ Container element not found')
+                      alert('Cannot find poker container')
+                      return
+                    }
+                    
                     const isFullscreen = document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).mozFullScreenElement;
                     
                     console.log('🔍 Current fullscreen state:', isFullscreen ? 'IN FULLSCREEN' : 'NOT IN FULLSCREEN')
+                    console.log('🔍 Container element:', elem)
                     
                     if (!isFullscreen) {
                       // Enter fullscreen
-                      console.log('🔍 Attempting to enter fullscreen...')
+                      console.log('🔍 Attempting to enter fullscreen on container...')
                       if (elem.requestFullscreen) {
                         console.log('🔍 Using standard requestFullscreen')
                         await elem.requestFullscreen();
                       } else if ((elem as any).webkitRequestFullscreen) {
                         console.log('🔍 Using webkitRequestFullscreen (Safari)')
                         await (elem as any).webkitRequestFullscreen();
+                      } else if ((elem as any).webkitEnterFullscreen) {
+                        console.log('🔍 Using webkitEnterFullscreen (iOS Safari fallback)')
+                        await (elem as any).webkitEnterFullscreen();
                       } else if ((elem as any).mozRequestFullScreen) {
                         console.log('🔍 Using mozRequestFullScreen (Firefox)')
                         await (elem as any).mozRequestFullScreen();
