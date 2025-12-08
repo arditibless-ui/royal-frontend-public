@@ -16,6 +16,7 @@ interface AdminDashboardProps {
 
 export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) {
   const [activeTab, setActiveTab] = useState('users')
+  const [showMenu, setShowMenu] = useState(false)
   const [users, setUsers] = useState<any[]>([])
   const [rooms, setRooms] = useState<any[]>([])
   const [managers, setManagers] = useState<any[]>([])
@@ -1125,7 +1126,8 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
       </div>
 
       {/* Tab Navigation */}
-      <div className="flex gap-2 mb-6 md:mb-8 landscape:mb-3 overflow-x-auto">
+      {/* Desktop/Landscape: Show all buttons */}
+      <div className="hidden landscape:flex md:flex gap-2 mb-6 md:mb-8 landscape:mb-3 overflow-x-auto">
         {tabs.map((tab) => {
           const IconComponent = tab.icon
           return (
@@ -1150,6 +1152,68 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
             </motion.button>
           )
         })}
+      </div>
+
+      {/* Mobile Portrait: Dropdown Menu */}
+      <div className="portrait:block landscape:hidden md:hidden mb-6 relative">
+        <button
+          onClick={() => setShowMenu(!showMenu)}
+          className={`w-full flex items-center justify-between px-4 py-3 rounded-lg font-medium text-sm transition-all ${
+            showMenu ? 'bg-yellow-600 text-black' : 'bg-black/40 text-white'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {(() => {
+              const currentTab = tabs.find(t => t.id === activeTab)
+              const IconComponent = currentTab?.icon || Users
+              return (
+                <>
+                  <IconComponent size={18} />
+                  <span>{currentTab?.label || 'Menu'}</span>
+                </>
+              )
+            })()}
+          </div>
+          <motion.div
+            animate={{ rotate: showMenu ? 180 : 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            ▼
+          </motion.div>
+        </button>
+
+        <AnimatePresence>
+          {showMenu && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="absolute left-0 right-0 top-full mt-2 bg-black/95 backdrop-blur-sm rounded-lg border border-white/20 shadow-2xl z-50 overflow-hidden"
+            >
+              {tabs.map((tab) => {
+                const IconComponent = tab.icon
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => {
+                      soundManager.playClick()
+                      setActiveTab(tab.id)
+                      setShowMenu(false)
+                    }}
+                    className={`w-full flex items-center gap-3 px-4 py-3 font-medium text-sm transition-all ${
+                      activeTab === tab.id
+                        ? 'bg-yellow-600/20 text-yellow-400 border-l-4 border-yellow-600'
+                        : 'text-white hover:bg-white/10'
+                    }`}
+                  >
+                    <IconComponent size={18} />
+                    <span>{tab.label}</span>
+                  </button>
+                )
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Tab Content */}
