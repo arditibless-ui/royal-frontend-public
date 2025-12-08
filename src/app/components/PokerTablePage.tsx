@@ -658,12 +658,14 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
           if (response.ok) {
             const data = await response.json()
             balances[playerId] = data.user?.credits || 0
+            console.log(`💰 Fetched balance for ${data.user?.username}: $${balances[playerId]}`)
           }
         } catch (err) {
           console.error(`Failed to fetch balance for player ${playerId}:`, err)
         }
       }
       
+      console.log('💰 Setting playerBalances:', balances)
       setPlayerBalances(balances)
     } catch (err) {
       console.error('Failed to fetch player balances:', err)
@@ -694,6 +696,11 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     fetchRoom()
     fetchTheme()
     fetchPlayerBalances()
+    
+    // Poll for credit updates every 5 seconds
+    const creditInterval = setInterval(() => {
+      fetchPlayerBalances()
+    }, 5000)
     
     // Start background music for poker game
     soundManager.playBackgroundMusic('game')
@@ -1704,6 +1711,9 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       
       // Remove poker table active class to re-enable scrolling
       document.body.classList.remove('poker-table-active');
+      
+      // Clear credit polling interval
+      if (creditInterval) clearInterval(creditInterval)
       
       if (interval) clearInterval(interval)
       if (socketRef.current) {
@@ -3411,6 +3421,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                     if (player) {
                       // Always show the account balance from playerBalances, fallback to 0
                       const accountBalance = playerBalances[player._id] !== undefined ? playerBalances[player._id] : 0
+                      console.log(`💰 Rendering credit display for ${player.username}: $${accountBalance}, playerBalances:`, playerBalances)
                       return (
                         <div className="relative mt-1">
                           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-yellow-300 font-bold bg-black/40 px-2 py-1 rounded-md backdrop-blur-sm">
