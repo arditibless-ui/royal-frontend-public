@@ -15,6 +15,8 @@ export const viewport = {
   minimumScale: 1,
   userScalable: false,
   viewportFit: 'cover',
+  // iOS specific - hide Safari UI in landscape
+  themeColor: '#000000',
 };
 
 export default function RootLayout({
@@ -25,6 +27,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        {/* iOS Safari minimal UI */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+        <meta name="mobile-web-app-capable" content="yes" />
+        
         {/* Preload premium poker table background */}
         <link rel="preload" href="/backgrounds/poker-table-hd.png" as="image" />
         {/* Preload card back for faster loading */}

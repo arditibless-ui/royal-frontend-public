@@ -55,23 +55,40 @@ html:has(body.poker-table-active) {
 
 /* Safari landscape mode fix - adjust table sizing */
 @media (orientation: landscape) and (max-height: 500px) {
-  .poker-table {
-    transform: scale(0.65) translateY(-8%) !important;
+  .poker-table-wrapper {
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height for mobile */
+    overflow: hidden;
+  }
+  
+  .poker-table-surface {
+    transform: scale(0.55) translateY(-12%) !important;
   }
   
   .player-container {
-    transform: scale(0.85) !important;
+    transform: scale(0.75) !important;
   }
   
   /* Adjust header positioning */
   .header-section {
-    padding: 0.25rem !important;
+    padding: 0.125rem !important;
+    transform: scale(0.85);
   }
   
   /* Make action buttons smaller */
-  .action-buttons button {
-    padding: 0.5rem 1rem !important;
-    font-size: 0.75rem !important;
+  .action-buttons {
+    transform: scale(0.8) !important;
+    margin-bottom: -1rem !important;
+  }
+  
+  /* Scale down community cards */
+  .community-cards {
+    transform: scale(0.8) !important;
+  }
+  
+  /* Scale down pot display */
+  .pot-display {
+    transform: scale(0.85) !important;
   }
 }
 

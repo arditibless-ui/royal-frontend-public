@@ -3424,25 +3424,50 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                 whileTap={{ scale: 0.95 }}
                 onClick={async () => {
                   soundManager.playClick()
+                  console.log('🔍 Fullscreen button clicked')
                   try {
                     const elem = document.documentElement;
-                    if (!document.fullscreenElement && !(document as any).webkitFullscreenElement) {
+                    const isFullscreen = document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).mozFullScreenElement;
+                    
+                    console.log('🔍 Current fullscreen state:', isFullscreen ? 'IN FULLSCREEN' : 'NOT IN FULLSCREEN')
+                    
+                    if (!isFullscreen) {
                       // Enter fullscreen
+                      console.log('🔍 Attempting to enter fullscreen...')
                       if (elem.requestFullscreen) {
+                        console.log('🔍 Using standard requestFullscreen')
                         await elem.requestFullscreen();
                       } else if ((elem as any).webkitRequestFullscreen) {
+                        console.log('🔍 Using webkitRequestFullscreen (Safari)')
                         await (elem as any).webkitRequestFullscreen();
+                      } else if ((elem as any).mozRequestFullScreen) {
+                        console.log('🔍 Using mozRequestFullScreen (Firefox)')
+                        await (elem as any).mozRequestFullScreen();
+                      } else if ((elem as any).msRequestFullscreen) {
+                        console.log('🔍 Using msRequestFullscreen (IE/Edge)')
+                        await (elem as any).msRequestFullscreen();
+                      } else {
+                        console.error('❌ No fullscreen API available')
+                        alert('Fullscreen not supported on this browser')
                       }
+                      console.log('✅ Fullscreen request sent')
                     } else {
                       // Exit fullscreen
+                      console.log('🔍 Attempting to exit fullscreen...')
                       if (document.exitFullscreen) {
                         await document.exitFullscreen();
                       } else if ((document as any).webkitExitFullscreen) {
                         await (document as any).webkitExitFullscreen();
+                      } else if ((document as any).mozCancelFullScreen) {
+                        await (document as any).mozCancelFullScreen();
+                      } else if ((document as any).msExitFullscreen) {
+                        await (document as any).msExitFullscreen();
                       }
+                      console.log('✅ Exited fullscreen')
                     }
                   } catch (err) {
-                    console.error('Fullscreen error:', err);
+                    console.error('❌ Fullscreen error:', err);
+                    alert('Fullscreen failed: ' + (err as Error).message)
                   }
                 }}
                 onMouseEnter={() => soundManager.playHover()}
