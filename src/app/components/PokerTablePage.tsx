@@ -813,23 +813,27 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     })
     
     // Listen for chat messages from other players
-    socket.on('room-message', (data) => {
+    socket.on('room-message', (data: { username: string, message: string, timestamp: Date }) => {
       console.log('💬 Chat message received:', data)
       
-      // Add message to chat history
-      setChatHistory(prev => [...prev, {
-        username: data.username,
+      // Find the player in the room to get their ID
+      const player = room?.players.find(p => p.username === data.username)
+      
+      const formattedMessage = {
+        playerId: player?._id || 'unknown',
+        playerName: data.username,
         message: data.message,
-        timestamp: data.timestamp
-      }])
+        timestamp: typeof data.timestamp === 'string' ? new Date(data.timestamp).getTime() : Date.now()
+      }
+      
+      // Add message to chat history
+      setChatMessages(prev => [...prev, formattedMessage])
       
       // Show chat bubble for other players' messages (not own messages)
       if (data.username !== profile?.username) {
         const bubble = {
-          id: Date.now(),
-          username: data.username,
-          message: data.message,
-          timestamp: Date.now()
+          ...formattedMessage,
+          id: Date.now()
         }
         
         setActiveBubbles(prev => [...prev, bubble])
