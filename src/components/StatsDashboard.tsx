@@ -87,7 +87,7 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 landscape:p-2"
         onClick={onClose}
       >
         <motion.div
@@ -95,117 +95,117 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 0.9, opacity: 0 }}
           transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-          className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto stats-panel-slide"
+          className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl landscape:rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] landscape:max-h-[85vh] overflow-y-auto stats-panel-slide"
           onClick={(e) => e.stopPropagation()}
         >
           {/* Header */}
-          <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 px-6 py-4 flex items-center justify-between rounded-t-2xl">
-            <div className="flex items-center gap-3">
-              <Trophy className="w-6 h-6 text-white leaderboard-trophy" />
-              <h2 className="text-white text-xl font-bold">Player Statistics</h2>
+          <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 px-6 landscape:px-4 py-4 landscape:py-2 flex items-center justify-between rounded-t-2xl landscape:rounded-t-xl">
+            <div className="flex items-center gap-3 landscape:gap-2">
+              <Trophy className="w-6 h-6 landscape:w-5 landscape:h-5 text-white leaderboard-trophy" />
+              <h2 className="text-white text-xl landscape:text-lg font-bold">Player Statistics</h2>
             </div>
             <button
               onClick={onClose}
-              className="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+              className="text-white hover:bg-white/20 rounded-full p-2 landscape:p-1.5 transition-colors"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5 landscape:w-4 landscape:h-4" />
             </button>
           </div>
 
           {/* Stats Content */}
-          <div className="p-6 space-y-6">
+          <div className="p-6 landscape:p-3 space-y-6 landscape:space-y-3">
             {loading ? (
-              <div className="text-center py-8">
-                <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-yellow-500"></div>
-                <p className="text-gray-400 mt-4">Loading statistics...</p>
+              <div className="text-center py-8 landscape:py-4">
+                <div className="inline-block animate-spin rounded-full h-12 w-12 landscape:h-8 landscape:w-8 border-b-2 border-yellow-500"></div>
+                <p className="text-gray-400 mt-4 landscape:mt-2 landscape:text-sm">Loading statistics...</p>
               </div>
             ) : (
               <>
             {/* Player Name */}
             <div className="text-center">
-              <h3 className="text-2xl font-bold text-white mb-1">{playerName}</h3>
-              <p className="text-gray-400 text-sm">Active Player</p>
+              <h3 className="text-2xl landscape:text-lg font-bold text-white mb-1 landscape:mb-0.5">{playerName}</h3>
+              <p className="text-gray-400 text-sm landscape:text-xs">Active Player</p>
             </div>
 
             {/* Main Stats Grid */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-4 landscape:gap-2">
               {/* Hands Played */}
-              <div className="bg-gray-800/50 rounded-xl p-4 stats-counter-increment">
-                <div className="flex items-center gap-2 mb-2">
-                  <Target className="w-5 h-5 text-blue-400" />
-                  <span className="text-gray-400 text-sm">Hands Played</span>
+              <div className="bg-gray-800/50 rounded-xl landscape:rounded-lg p-4 landscape:p-2 stats-counter-increment">
+                <div className="flex items-center gap-2 landscape:gap-1 mb-2 landscape:mb-1">
+                  <Target className="w-5 h-5 landscape:w-4 landscape:h-4 text-blue-400" />
+                  <span className="text-gray-400 text-sm landscape:text-xs">Hands Played</span>
                 </div>
-                <div className="text-3xl font-bold text-white">{stats.handsPlayed}</div>
+                <div className="text-3xl landscape:text-xl font-bold text-white">{stats.handsPlayed}</div>
               </div>
 
               {/* Hands Won */}
-              <div className="bg-gray-800/50 rounded-xl p-4 stats-counter-increment">
-                <div className="flex items-center gap-2 mb-2">
-                  <Trophy className="w-5 h-5 text-yellow-400" />
-                  <span className="text-gray-400 text-sm">Hands Won</span>
+              <div className="bg-gray-800/50 rounded-xl landscape:rounded-lg p-4 landscape:p-2 stats-counter-increment">
+                <div className="flex items-center gap-2 landscape:gap-1 mb-2 landscape:mb-1">
+                  <Trophy className="w-5 h-5 landscape:w-4 landscape:h-4 text-yellow-400" />
+                  <span className="text-gray-400 text-sm landscape:text-xs">Hands Won</span>
                 </div>
-                <div className="text-3xl font-bold text-white">{stats.handsWon}</div>
+                <div className="text-3xl landscape:text-xl font-bold text-white">{stats.handsWon}</div>
               </div>
 
               {/* Win Rate */}
-              <div className="bg-gray-800/50 rounded-xl p-4 stats-counter-increment">
-                <div className="flex items-center gap-2 mb-2">
-                  <TrendingUp className="w-5 h-5 text-green-400" />
-                  <span className="text-gray-400 text-sm">Win Rate</span>
+              <div className="bg-gray-800/50 rounded-xl landscape:rounded-lg p-4 landscape:p-2 stats-counter-increment">
+                <div className="flex items-center gap-2 landscape:gap-1 mb-2 landscape:mb-1">
+                  <TrendingUp className="w-5 h-5 landscape:w-4 landscape:h-4 text-green-400" />
+                  <span className="text-gray-400 text-sm landscape:text-xs">Win Rate</span>
                 </div>
-                <div className="text-3xl font-bold text-green-400">{winRate}%</div>
+                <div className="text-3xl landscape:text-xl font-bold text-green-400">{winRate}%</div>
               </div>
 
               {/* Total Winnings */}
-              <div className="bg-gray-800/50 rounded-xl p-4 stats-counter-increment">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-yellow-400 text-lg">💰</span>
-                  <span className="text-gray-400 text-sm">Total Winnings</span>
+              <div className="bg-gray-800/50 rounded-xl landscape:rounded-lg p-4 landscape:p-2 stats-counter-increment">
+                <div className="flex items-center gap-2 landscape:gap-1 mb-2 landscape:mb-1">
+                  <span className="text-yellow-400 text-lg landscape:text-base">💰</span>
+                  <span className="text-gray-400 text-sm landscape:text-xs">Total Winnings</span>
                 </div>
-                <div className={`text-3xl font-bold ${stats.totalWinnings >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <div className={`text-3xl landscape:text-xl font-bold ${stats.totalWinnings >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   ${stats.totalWinnings >= 0 ? '+' : ''}{stats.totalWinnings}
                 </div>
               </div>
             </div>
 
             {/* Secondary Stats */}
-            <div className="space-y-3">
-              <h4 className="text-white font-semibold mb-3">Detailed Statistics</h4>
+            <div className="space-y-3 landscape:space-y-2">
+              <h4 className="text-white font-semibold mb-3 landscape:mb-2 landscape:text-sm">Detailed Statistics</h4>
               
               {/* Biggest Win */}
-              <div className="flex items-center justify-between bg-gray-800/30 rounded-lg p-3">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="w-4 h-4 text-green-400" />
-                  <span className="text-gray-300 text-sm">Biggest Win</span>
+              <div className="flex items-center justify-between bg-gray-800/30 rounded-lg p-3 landscape:p-2">
+                <div className="flex items-center gap-2 landscape:gap-1">
+                  <TrendingUp className="w-4 h-4 landscape:w-3 landscape:h-3 text-green-400" />
+                  <span className="text-gray-300 text-sm landscape:text-xs">Biggest Win</span>
                 </div>
-                <span className="text-green-400 font-bold">${stats.biggestWin}</span>
+                <span className="text-green-400 font-bold landscape:text-sm">${stats.biggestWin}</span>
               </div>
 
               {/* Biggest Loss */}
-              <div className="flex items-center justify-between bg-gray-800/30 rounded-lg p-3">
-                <div className="flex items-center gap-2">
-                  <TrendingDown className="w-4 h-4 text-red-400" />
-                  <span className="text-gray-300 text-sm">Biggest Loss</span>
+              <div className="flex items-center justify-between bg-gray-800/30 rounded-lg p-3 landscape:p-2">
+                <div className="flex items-center gap-2 landscape:gap-1">
+                  <TrendingDown className="w-4 h-4 landscape:w-3 landscape:h-3 text-red-400" />
+                  <span className="text-gray-300 text-sm landscape:text-xs">Biggest Loss</span>
                 </div>
-                <span className="text-red-400 font-bold">${stats.biggestLoss}</span>
+                <span className="text-red-400 font-bold landscape:text-sm">${stats.biggestLoss}</span>
               </div>
 
               {/* VPIP */}
-              <div className="flex items-center justify-between bg-gray-800/30 rounded-lg p-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-blue-400 text-sm">📊</span>
-                  <span className="text-gray-300 text-sm">VPIP (Voluntarily Put $ In Pot)</span>
+              <div className="flex items-center justify-between bg-gray-800/30 rounded-lg p-3 landscape:p-2">
+                <div className="flex items-center gap-2 landscape:gap-1">
+                  <span className="text-blue-400 text-sm landscape:text-xs">📊</span>
+                  <span className="text-gray-300 text-sm landscape:text-xs">VPIP (Voluntarily Put $ In Pot)</span>
                 </div>
-                <span className="text-blue-400 font-bold">{stats.vpip.toFixed(1)}%</span>
+                <span className="text-blue-400 font-bold landscape:text-sm">{stats.vpip.toFixed(1)}%</span>
               </div>
 
               {/* PFR */}
-              <div className="flex items-center justify-between bg-gray-800/30 rounded-lg p-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-purple-400 text-sm">📈</span>
-                  <span className="text-gray-300 text-sm">PFR (Pre-Flop Raise %)</span>
+              <div className="flex items-center justify-between bg-gray-800/30 rounded-lg p-3 landscape:p-2">
+                <div className="flex items-center gap-2 landscape:gap-1">
+                  <span className="text-purple-400 text-sm landscape:text-xs">📈</span>
+                  <span className="text-gray-300 text-sm landscape:text-xs">PFR (Pre-Flop Raise %)</span>
                 </div>
-                <span className="text-purple-400 font-bold">{stats.pfr.toFixed(1)}%</span>
+                <span className="text-purple-400 font-bold landscape:text-sm">{stats.pfr.toFixed(1)}%</span>
               </div>
             </div>
             </>

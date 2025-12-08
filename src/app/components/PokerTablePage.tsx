@@ -17,6 +17,7 @@ import PotOddsDisplay from '../../components/PotOddsDisplay'
 import ActionHistory from '../../components/ActionHistory'
 import FloatingChipsBackground from '../../components/FloatingChipsBackground'
 import StatsDashboard from '../../components/StatsDashboard'
+import GameHistoryModal from '../../components/GameHistoryModal'
 import GameSettings from './GameSettings'
 import { useSwipeGesture } from '../hooks/useSwipeGesture'
 import PlayerSpotlight from '../../components/PlayerSpotlight'
@@ -199,6 +200,15 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
   const [showStats, setShowStats] = useState(false)
   const [showSettings, setShowSettings] = useState(false)
   const [showNotifications, setShowNotifications] = useState(false)
+  const [showHistory, setShowHistory] = useState(false)
+  const [playerBalances, setPlayerBalances] = useState<Record<string, number>>({})
+  const [creditAnimations, setCreditAnimations] = useState<Array<{
+    id: string
+    playerId: string
+    amount: number
+    x: number
+    y: number
+  }>>([])
   
   // Game Settings State
   const [gesturesEnabled, setGesturesEnabled] = useState(false)
@@ -627,6 +637,39 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     }
   }
 
+  const fetchPlayerBalances = async () => {
+    if (!API_URL || !room) return
+    
+    try {
+      const token = localStorage.getItem('token')
+      const playerIds = room.players.map(p => p._id)
+      
+      // Fetch balances for all players in the room
+      const balances: Record<string, number> = {}
+      
+      for (const playerId of playerIds) {
+        try {
+          const response = await fetch(`${API_URL}/api/users/${playerId}`, {
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          })
+          
+          if (response.ok) {
+            const data = await response.json()
+            balances[playerId] = data.user?.credits || 0
+          }
+        } catch (err) {
+          console.error(`Failed to fetch balance for player ${playerId}:`, err)
+        }
+      }
+      
+      setPlayerBalances(balances)
+    } catch (err) {
+      console.error('Failed to fetch player balances:', err)
+    }
+  }
+
   useEffect(() => {
     // Global error handler to prevent white screen crashes
     const handleError = (error: ErrorEvent) => {
@@ -647,6 +690,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     
     fetchRoom()
     fetchTheme()
+    fetchPlayerBalances()
     
     // Start background music for poker game
     soundManager.playBackgroundMusic('game')
@@ -1592,6 +1636,15 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
         message: data.message,
         type: 'info'
       })
+    })
+
+    // Listen for real-time credit updates
+    socket.on('credits-updated', (data: { userId: string, newBalance: number }) => {
+      console.log('💰 Credits updated:', data)
+      setPlayerBalances(prev => ({
+        ...prev,
+        [data.userId]: data.newBalance
+      }))
     })
     
     // Only set interval if we have an API_URL and not using demo room
@@ -2683,6 +2736,13 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
         playerName={room?.players.find(p => p.position === playerPerspective)?.username || 'Player'}
       />
 
+      {/* Game History Modal */}
+      <GameHistoryModal
+        isOpen={showHistory}
+        onClose={() => setShowHistory(false)}
+        userId={currentUserId || ''}
+      />
+
       {/* Game Settings Modal */}
       <GameSettings
         isOpen={showSettings}
@@ -3364,7 +3424,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
                     soundManager.playClick()
-                    setShowActionHistory(!showActionHistory)
+                    setShowHistory(true)
                   }}
                   onMouseEnter={() => soundManager.playHover()}
                   className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap"
@@ -3934,6 +3994,13 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                         <Coins size={16} className="sm:w-[18px] sm:h-[18px] md:w-[22px] md:h-[22px] animate-pulse" />
                         <span className="tracking-wide">${player.chips.toLocaleString()}</span>
                       </div>
+
+                      {/* Real-time Credit Balance Display */}
+                      {playerBalances[player._id] !== undefined && (
+                        <div className="text-xs text-green-400 font-semibold mt-0.5">
+                          Balance: ${playerBalances[player._id].toLocaleString()}
+                        </div>
+                      )}
                     </div>
 
                     {/* Player Cards - Show based on perspective */}
