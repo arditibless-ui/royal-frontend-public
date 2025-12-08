@@ -20,10 +20,15 @@ body {
   padding: 0;
   overflow: auto;
   touch-action: manipulation;
+  /* Safari mobile viewport fix */
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
 }
 
 html {
   overflow: auto;
+  /* Safari mobile viewport fix */
+  height: -webkit-fill-available;
 }
 
 /* Disable scrolling ONLY on poker table page */
@@ -44,7 +49,30 @@ html:has(body.poker-table-active) {
   container-name: poker-container;
   width: 100%;
   min-height: 100vh;
+  min-height: -webkit-fill-available;
   position: relative;
+}
+
+/* Safari landscape mode fix - adjust table sizing */
+@media (orientation: landscape) and (max-height: 500px) {
+  .poker-table {
+    transform: scale(0.7) !important;
+  }
+  
+  .player-container {
+    transform: scale(0.9) !important;
+  }
+  
+  /* Adjust header positioning */
+  .header-section {
+    padding: 0.25rem !important;
+  }
+  
+  /* Make action buttons smaller */
+  .action-buttons button {
+    padding: 0.5rem 1rem !important;
+    font-size: 0.75rem !important;
+  }
 }
 
 /* Dynamic scaling based on container dimensions - Table smaller, players normal size */
