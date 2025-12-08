@@ -2851,7 +2851,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   transition={{ delay: 0.2 }}
                   className="flex items-center gap-3 mobile-landscape:gap-2 bg-white/10 rounded-xl p-3 mobile-landscape:p-2 backdrop-blur-sm mobile-landscape:flex-1"
                 >
-                  <div className="text-3xl mobile-landscape:text-2xl">⬆️</div>️</div>
+                  <div className="text-3xl mobile-landscape:text-2xl">⬆️</div>
                   <div>
                     <div className="text-white font-bold text-sm mobile-landscape:text-xs">Swipe Up</div>
                     <div className="text-purple-200 text-xs mobile-landscape:text-[10px]">Fold hand</div>
@@ -2865,7 +2865,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   transition={{ delay: 0.3 }}
                   className="flex items-center gap-3 mobile-landscape:gap-2 bg-white/10 rounded-xl p-3 mobile-landscape:p-2 backdrop-blur-sm mobile-landscape:flex-1"
                 >
-                  <div className="text-3xl mobile-landscape:text-2xl">➡️</div>️</div>
+                  <div className="text-3xl mobile-landscape:text-2xl">➡️</div>
                   <div>
                     <div className="text-white font-bold text-sm mobile-landscape:text-xs">Swipe Right</div>
                     <div className="text-purple-200 text-xs mobile-landscape:text-[10px]">Call/Check</div>
@@ -2879,7 +2879,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   transition={{ delay: 0.4 }}
                   className="flex items-center gap-3 mobile-landscape:gap-2 bg-white/10 rounded-xl p-3 mobile-landscape:p-2 backdrop-blur-sm mobile-landscape:flex-1"
                 >
-                  <div className="text-3xl mobile-landscape:text-2xl">⬅️</div>️</div>
+                  <div className="text-3xl mobile-landscape:text-2xl">⬅️</div>
                   <div>
                     <div className="text-white font-bold text-sm mobile-landscape:text-xs">Swipe Left</div>
                     <div className="text-purple-200 text-xs mobile-landscape:text-[10px]">Raise bet</div>
