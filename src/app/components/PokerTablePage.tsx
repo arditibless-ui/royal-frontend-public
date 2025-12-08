@@ -2822,39 +2822,39 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
               animate={{ scale: 1, y: 0 }}
               exit={{ scale: 0.8, y: 50 }}
               transition={{ type: "spring", damping: 20 }}
-              className="bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 rounded-3xl p-4 mobile-landscape:p-3 max-w-md mobile-landscape:max-w-2xl mx-4 mobile-landscape:mx-2 shadow-2xl border-2 border-purple-500/50 max-h-[90vh] mobile-landscape:max-h-[85vh] overflow-y-auto"
+              className="bg-gradient-to-br from-purple-900 via-indigo-900 to-blue-900 rounded-3xl p-4 landscape:p-3 max-w-md landscape:max-w-2xl mx-4 landscape:mx-2 shadow-2xl border-2 border-purple-500/50 max-h-[90vh] landscape:max-h-[85vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
               {/* Title */}
-              <div className="text-center mb-4 mobile-landscape:mb-2">
+              <div className="text-center mb-4 landscape:mb-2">
                 <motion.div
                   animate={{ rotate: [0, 10, -10, 0] }}
                   transition={{ duration: 0.5, repeat: 3 }}
-                  className="text-4xl mobile-landscape:text-3xl mb-2 mobile-landscape:mb-1"
+                  className="text-4xl landscape:text-3xl mb-2 landscape:mb-1"
                 >
                   👆
                 </motion.div>
-                <h2 className="text-2xl mobile-landscape:text-xl font-bold text-white mb-1 mobile-landscape:mb-0.5">
+                <h2 className="text-2xl landscape:text-xl font-bold text-white mb-1 landscape:mb-0.5">
                   Swipe Gestures!
                 </h2>
-                <p className="text-purple-200 text-xs mobile-landscape:text-[10px]">
+                <p className="text-purple-200 text-xs landscape:text-[10px]">
                   Control the game with simple swipes
                 </p>
               </div>
 
               {/* Gesture Instructions */}
-              <div className="space-y-2 mobile-landscape:space-y-1.5 mb-4 mobile-landscape:mb-2 mobile-landscape:flex mobile-landscape:gap-2">
+              <div className="space-y-2 landscape:space-y-1.5 mb-4 landscape:mb-2 landscape:flex landscape:gap-2">
                 {/* Swipe Up - Fold */}
                 <motion.div
                   initial={{ x: -50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.2 }}
-                  className="flex items-center gap-3 mobile-landscape:gap-2 bg-white/10 rounded-xl p-3 mobile-landscape:p-2 backdrop-blur-sm mobile-landscape:flex-1"
+                  className="flex items-center gap-3 landscape:gap-2 bg-white/10 rounded-xl p-3 landscape:p-2 backdrop-blur-sm landscape:flex-1"
                 >
-                  <div className="text-3xl mobile-landscape:text-2xl">⬆️</div>
+                  <div className="text-3xl landscape:text-2xl">⬆️</div>
                   <div>
-                    <div className="text-white font-bold text-sm mobile-landscape:text-xs">Swipe Up</div>
-                    <div className="text-purple-200 text-xs mobile-landscape:text-[10px]">Fold hand</div>
+                    <div className="text-white font-bold text-sm landscape:text-xs">Swipe Up</div>
+                    <div className="text-purple-200 text-xs landscape:text-[10px]">Fold hand</div>
                   </div>
                 </motion.div>
 
@@ -2863,12 +2863,12 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   initial={{ x: -50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.3 }}
-                  className="flex items-center gap-3 mobile-landscape:gap-2 bg-white/10 rounded-xl p-3 mobile-landscape:p-2 backdrop-blur-sm mobile-landscape:flex-1"
+                  className="flex items-center gap-3 landscape:gap-2 bg-white/10 rounded-xl p-3 landscape:p-2 backdrop-blur-sm landscape:flex-1"
                 >
-                  <div className="text-3xl mobile-landscape:text-2xl">➡️</div>
+                  <div className="text-3xl landscape:text-2xl">➡️</div>
                   <div>
-                    <div className="text-white font-bold text-sm mobile-landscape:text-xs">Swipe Right</div>
-                    <div className="text-purple-200 text-xs mobile-landscape:text-[10px]">Call/Check</div>
+                    <div className="text-white font-bold text-sm landscape:text-xs">Swipe Right</div>
+                    <div className="text-purple-200 text-xs landscape:text-[10px]">Call/Check</div>
                   </div>
                 </motion.div>
 
@@ -2877,12 +2877,12 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   initial={{ x: -50, opacity: 0 }}
                   animate={{ x: 0, opacity: 1 }}
                   transition={{ delay: 0.4 }}
-                  className="flex items-center gap-3 mobile-landscape:gap-2 bg-white/10 rounded-xl p-3 mobile-landscape:p-2 backdrop-blur-sm mobile-landscape:flex-1"
+                  className="flex items-center gap-3 landscape:gap-2 bg-white/10 rounded-xl p-3 landscape:p-2 backdrop-blur-sm landscape:flex-1"
                 >
-                  <div className="text-3xl mobile-landscape:text-2xl">⬅️</div>
+                  <div className="text-3xl landscape:text-2xl">⬅️</div>
                   <div>
-                    <div className="text-white font-bold text-sm mobile-landscape:text-xs">Swipe Left</div>
-                    <div className="text-purple-200 text-xs mobile-landscape:text-[10px]">Raise bet</div>
+                    <div className="text-white font-bold text-sm landscape:text-xs">Swipe Left</div>
+                    <div className="text-purple-200 text-xs landscape:text-[10px]">Raise bet</div>
                   </div>
                 </motion.div>
               </div>
@@ -2892,13 +2892,13 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
                 onClick={dismissGestureTutorial}
-                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 mobile-landscape:py-2 rounded-xl shadow-lg hover:shadow-xl transition-all text-sm mobile-landscape:text-xs"
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500 text-white font-bold py-3 landscape:py-2 rounded-xl shadow-lg hover:shadow-xl transition-all text-sm landscape:text-xs"
               >
                 Got it! Let's Play 🎮
               </motion.button>
 
               {/* Tip */}
-              <p className="text-center text-purple-300 text-[10px] mobile-landscape:text-[9px] mt-2 mobile-landscape:mt-1">
+              <p className="text-center text-purple-300 text-[10px] landscape:text-[9px] mt-2 landscape:mt-1">
                 You can disable gestures in Settings ⚙️
               </p>
             </motion.div>
@@ -2954,26 +2954,26 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
               transition={{ type: "spring", duration: 0.5 }}
               className="fixed inset-0 flex items-center justify-center z-[60] pointer-events-none px-4"
             >
-              <div className="bg-gradient-to-br from-green-600/95 to-green-800/95 backdrop-blur-md border-2 sm:border-4 border-yellow-400 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 text-center max-w-[90vw] mobile-landscape:max-w-[300px] mobile-landscape:max-h-[200px]">
+              <div className="bg-gradient-to-br from-green-600/95 to-green-800/95 backdrop-blur-md border-2 sm:border-4 border-yellow-400 rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-6 md:p-8 text-center max-w-[90vw] landscape:max-w-[300px] landscape:max-h-[200px]">
                 <motion.div
                   animate={{ 
                     scale: [1, 1.1, 1],
                     rotate: [0, 5, -5, 0]
                   }}
                   transition={{ duration: 0.5, repeat: Infinity }}
-                  className="text-4xl sm:text-6xl md:text-8xl mb-2 sm:mb-3 md:mb-4 mobile-landscape:text-5xl mobile-landscape:mb-2"
+                  className="text-4xl sm:text-6xl md:text-8xl mb-2 sm:mb-3 md:mb-4 landscape:text-5xl landscape:mb-2"
                 >
                   {gameCountdown.countdown}
                 </motion.div>
-                <h2 className="text-white text-sm sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 mobile-landscape:text-base mobile-landscape:mb-1">
+                <h2 className="text-white text-sm sm:text-xl md:text-2xl font-bold mb-1 sm:mb-2 landscape:text-base landscape:mb-1">
                   {gameCountdown.type === 'starting' ? 'Game Starting In...' : 
                    gameCountdown.type === 'next-round' ? 'Next Round In...' : 
                    'Game Stopping In...'}
                 </h2>
                 <div className="flex items-center justify-center gap-1 sm:gap-2 text-yellow-300">
-                  <span className="text-lg sm:text-2xl md:text-3xl mobile-landscape:text-xl">🎰</span>
-                  <span className="text-xs sm:text-base md:text-lg font-semibold mobile-landscape:text-sm">Get Ready!</span>
-                  <span className="text-lg sm:text-2xl md:text-3xl mobile-landscape:text-xl">🃏</span>
+                  <span className="text-lg sm:text-2xl md:text-3xl landscape:text-xl">🎰</span>
+                  <span className="text-xs sm:text-base md:text-lg font-semibold landscape:text-sm">Get Ready!</span>
+                  <span className="text-lg sm:text-2xl md:text-3xl landscape:text-xl">🃏</span>
                 </div>
               </div>
             </motion.div>
@@ -3043,7 +3043,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   ))}
                 </>
               )}
-              <div className={`backdrop-blur-md border-4 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 text-center mobile-landscape:p-4 mobile-landscape:rounded-xl max-w-[90vw] mobile-landscape:max-w-[350px] relative overflow-hidden ${
+              <div className={`backdrop-blur-md border-4 rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 text-center landscape:p-4 landscape:rounded-xl max-w-[90vw] landscape:max-w-[350px] relative overflow-hidden ${
                 centerNotification.type === 'success' ? 'bg-gradient-to-br from-yellow-500/95 via-orange-500/95 to-red-500/95 border-yellow-300' :
                 centerNotification.type === 'warning' ? 'bg-red-600/95 border-red-400' :
                 'bg-blue-600/95 border-blue-400'
@@ -3079,10 +3079,10 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   </div>
                 ) : (
                   <>
-                    <div className="text-2xl sm:text-4xl mb-2 sm:mb-3 mobile-landscape:text-xl mobile-landscape:mb-1">
+                    <div className="text-2xl sm:text-4xl mb-2 sm:mb-3 landscape:text-xl landscape:mb-1">
                       {centerNotification.type === 'warning' ? '⚠️' : 'ℹ️'}
                     </div>
-                    <div className="text-white text-base sm:text-lg font-bold mobile-landscape:text-sm">
+                    <div className="text-white text-base sm:text-lg font-bold landscape:text-sm">
                       {centerNotification.message}
                     </div>
                   </>
@@ -3281,7 +3281,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -300 }}
                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                className="fixed top-28 left-4 z-40 w-48 mobile-landscape:top-24 mobile-landscape:left-4 lg:top-32 lg:left-6 xl:w-56"
+                className="fixed top-28 left-4 z-40 w-48 landscape:top-24 landscape:left-4 lg:top-32 lg:left-6 xl:w-56"
               >
                 <div className="bg-gradient-to-br from-red-600/95 to-red-700/95 border-2 border-red-400 rounded-lg shadow-xl p-2 text-white backdrop-blur-sm">
                   <div className="flex items-center gap-1 mb-1">
@@ -3405,15 +3405,17 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                       })()}
                     </span>
                   </div>
-                  {/* Credit Balance Display */}
+                  {/* Credit Balance Display - Shows TOTAL ACCOUNT BALANCE */}
                   {playerPerspective !== null && room && room.players && (() => {
                     const player = room.players.find(p => p.position === playerPerspective)
-                    if (player && playerBalances[player._id] !== undefined) {
+                    if (player) {
+                      // Always show the account balance from playerBalances, fallback to 0
+                      const accountBalance = playerBalances[player._id] !== undefined ? playerBalances[player._id] : 0
                       return (
-                        <div className="relative">
-                          <div className="flex items-center gap-1 text-[8px] text-yellow-400 font-bold">
-                            <Coins size={8} />
-                            <span>${playerBalances[player._id].toLocaleString()}</span>
+                        <div className="relative mt-1">
+                          <div className="flex items-center gap-1.5 text-xs sm:text-sm text-yellow-300 font-bold bg-black/40 px-2 py-1 rounded-md backdrop-blur-sm">
+                            <Coins size={14} className="text-yellow-400" />
+                            <span className="text-white">${accountBalance.toLocaleString()}</span>
                           </div>
                           {/* Credit Change Animation */}
                           {creditAnimations
@@ -4614,7 +4616,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                       y: (visualTimeLeft <= 5 && visualTimeLeft > 0) ? [-1, 1, -1, 1, 0] : 0
                     }}
                     exit={{ scale: 0, opacity: 0 }}
-                    className="fixed top-16 right-4 mobile-landscape:top-12 mobile-landscape:right-2 z-40"
+                    className="fixed top-16 right-4 landscape:top-4 landscape:right-4 z-40"
                     transition={{
                       scale: { duration: 0.3 },
                       opacity: { duration: 0.3 },
@@ -4622,12 +4624,12 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                       y: { duration: 0.3, repeat: (visualTimeLeft <= 5 && visualTimeLeft > 0) ? Infinity : 0, repeatType: "reverse" }
                     }}
                   >
-                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 mobile-landscape:w-14 mobile-landscape:h-14">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 landscape:w-16 landscape:h-16">
                       {/* Background circle */}
-                      <svg className="absolute inset-0 w-full h-full transform -rotate-90">
+                      <svg className="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
                         <circle
-                          cx="50%"
-                          cy="50%"
+                          cx="50"
+                          cy="50"
                           r="45"
                           fill="rgba(0, 0, 0, 0.8)"
                           stroke="rgba(255, 255, 255, 0.2)"
@@ -4635,8 +4637,8 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                         />
                         {/* Progress circle */}
                         <circle
-                          cx="50%"
-                          cy="50%"
+                          cx="50"
+                          cy="50"
                           r="45"
                           fill="none"
                           stroke={getStrokeColor()}
