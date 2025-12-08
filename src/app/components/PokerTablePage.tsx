@@ -1639,12 +1639,38 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     })
 
     // Listen for real-time credit updates
-    socket.on('credits-updated', (data: { userId: string, newBalance: number }) => {
+    socket.on('credits-updated', (data: { userId: string, newBalance: number, change?: number }) => {
       console.log('💰 Credits updated:', data)
+      
+      const oldBalance = playerBalances[data.userId]
+      const newBalance = data.newBalance
+      const change = data.change || (oldBalance !== undefined ? newBalance - oldBalance : 0)
+      
+      // Update balance
       setPlayerBalances(prev => ({
         ...prev,
-        [data.userId]: data.newBalance
+        [data.userId]: newBalance
       }))
+      
+      // Show animation if there's a change
+      if (change !== 0) {
+        const animId = `${data.userId}-${Date.now()}`
+        setCreditAnimations(prev => [
+          ...prev,
+          {
+            id: animId,
+            playerId: data.userId,
+            amount: change,
+            x: 0,
+            y: 0
+          }
+        ])
+        
+        // Auto-remove after animation
+        setTimeout(() => {
+          setCreditAnimations(prev => prev.filter(a => a.id !== animId))
+        }, 1500)
+      }
     })
     
     // Only set interval if we have an API_URL and not using demo room
@@ -2470,6 +2496,15 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       playerName: senderName,
       message: chatMessage.trim(),
       timestamp: Date.now()
+    }
+    
+    // Send message via socket to all players in room
+    if (socketRef.current && room) {
+      socketRef.current.emit('send-message', {
+        roomCode: room.code,
+        message: chatMessage.trim()
+      })
+      console.log('💬 Chat message sent via socket:', chatMessage.trim())
     }
     
     // Add to chat history (permanent)
@@ -3351,17 +3386,54 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   ? 'bg-purple-600/90 border-purple-400/50' 
                   : 'bg-blue-600/90 border-blue-400/50'
               }`} style={{ padding: '3px 6px' }}>
-                <div className="flex items-center gap-1 text-white">
-                  <Eye size={10} />
-                  <span className="font-medium text-[9px] whitespace-nowrap overflow-hidden text-ellipsis">
-                    {(() => {
-                      if (playerPerspective !== null && room && room.players) {
-                        const player = room.players.find(p => p.position === playerPerspective)
-                        if (player) return `${player.username}`
-                      }
-                      return 'Observer'
-                    })()}
-                  </span>
+                <div className="flex flex-col items-start gap-0.5 text-white">
+                  <div className="flex items-center gap-1">
+                    <Eye size={10} />
+                    <span className="font-medium text-[9px] whitespace-nowrap overflow-hidden text-ellipsis">
+                      {(() => {
+                        if (playerPerspective !== null && room && room.players) {
+                          const player = room.players.find(p => p.position === playerPerspective)
+                          if (player) return `${player.username}`
+                        }
+                        return 'Observer'
+                      })()}
+                    </span>
+                  </div>
+                  {/* Credit Balance Display */}
+                  {playerPerspective !== null && room && room.players && (() => {
+                    const player = room.players.find(p => p.position === playerPerspective)
+                    if (player && playerBalances[player._id] !== undefined) {
+                      return (
+                        <div className="relative">
+                          <div className="flex items-center gap-1 text-[8px] text-yellow-400 font-bold">
+                            <Coins size={8} />
+                            <span>${playerBalances[player._id].toLocaleString()}</span>
+                          </div>
+                          {/* Credit Change Animation */}
+                          {creditAnimations
+                            .filter(anim => anim.playerId === player._id)
+                            .map(anim => (
+                              <motion.div
+                                key={anim.id}
+                                initial={{ opacity: 1, y: 0 }}
+                                animate={{ opacity: 0, y: -20 }}
+                                transition={{ duration: 1.5 }}
+                                className={`absolute left-0 top-0 font-bold text-[10px] whitespace-nowrap ${
+                                  anim.amount > 0 ? 'text-green-400' : 'text-red-400'
+                                }`}
+                                onAnimationComplete={() => {
+                                  setCreditAnimations(prev => prev.filter(a => a.id !== anim.id))
+                                }}
+                              >
+                                {anim.amount > 0 ? '+' : ''}{anim.amount}
+                              </motion.div>
+                            ))
+                          }
+                        </div>
+                      )
+                    }
+                    return null
+                  })()}
                 </div>
               </div>
             </div>
@@ -4536,7 +4608,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                       y: (visualTimeLeft <= 5 && visualTimeLeft > 0) ? [-1, 1, -1, 1, 0] : 0
                     }}
                     exit={{ scale: 0, opacity: 0 }}
-                    className="fixed top-16 right-4 z-50"
+                    className="fixed top-16 right-4 landscape:top-12 landscape:right-2 z-40"
                     transition={{
                       scale: { duration: 0.3 },
                       opacity: { duration: 0.3 },
@@ -4544,7 +4616,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                       y: { duration: 0.3, repeat: (visualTimeLeft <= 5 && visualTimeLeft > 0) ? Infinity : 0, repeatType: "reverse" }
                     }}
                   >
-                    <div className="relative w-20 h-20 sm:w-24 sm:h-24">
+                    <div className="relative w-16 h-16 sm:w-20 sm:h-20 landscape:w-14 landscape:h-14">
                       {/* Background circle */}
                       <svg className="absolute inset-0 w-full h-full transform -rotate-90">
                         <circle
