@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Poker App Icons</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: white;
+        }
+        canvas {
+            border: 2px solid #444;
+            margin: 10px;
+            background: #065f46;
+            border-radius: 20%;
+        }
+        button {
+            background: #065f46;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #047857;
+        }
+        .container {
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Poker App Icon Generator</h1>
+        <p>Click the buttons below to download the app icons:</p>
+        
+        <div>
+            <canvas id="icon192" width="192" height="192"></canvas>
+            <button onclick="downloadIcon('icon192', 'poker-icon-192.png')">Download 192x192</button>
+        </div>
+        
+        <div>
+            <canvas id="icon512" width="512" height="512"></canvas>
+            <button onclick="downloadIcon('icon512', 'poker-icon-512.png')">Download 512x512</button>
+        </div>
+    </div>
+
+    <script>
+        // Draw crown icon similar to the welcome screen
+        function drawCrown(ctx, size, centerX, centerY) {
+            const scale = size / 24; // Lucide icons are 24x24 units
+            
+            ctx.save();
+            ctx.translate(centerX, centerY);
+            ctx.scale(scale, scale);
+            
+            // Crown color (golden yellow)
+            ctx.fillStyle = '#facc15';
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2.5 / scale * 2;
+            ctx.lineJoin = 'round';
+            ctx.lineCap = 'round';
+            
+            // Draw proper Lucide crown shape
+            ctx.beginPath();
+            // Left spike
+            ctx.moveTo(2, 6);
+            ctx.lineTo(2, 10);
+            // Bottom curve
+            ctx.bezierCurveTo(2, 10, 9.189, 14.34, 12, 14.34);
+            ctx.bezierCurveTo(14.811, 14.34, 22, 10, 22, 10);
+            // Right spike
+            ctx.lineTo(22, 6);
+            ctx.lineTo(18, 7);
+            ctx.lineTo(18, 3.5);
+            // Top point
+            ctx.lineTo(12, 1);
+            // Left side
+            ctx.lineTo(6, 3.5);
+            ctx.lineTo(6, 7);
+            ctx.closePath();
+            
+            ctx.fill();
+            ctx.stroke();
+            
+            // Add shine
+            const gradient = ctx.createLinearGradient(0, 0, 0, 15);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.4)');
+            gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0.1)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            ctx.restore();
+        }
+        
+        function createIcon(canvasId) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const size = canvas.width;
+            
+            // Background - dark green gradient
+            const gradient = ctx.createLinearGradient(0, 0, size, size);
+            gradient.addColorStop(0, '#065f46');
+            gradient.addColorStop(1, '#064e3b');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, size, size);
+            
+            // Add subtle texture
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.05)';
+            for (let i = 0; i < 50; i++) {
+                ctx.fillRect(
+                    Math.random() * size,
+                    Math.random() * size,
+                    Math.random() * 3,
+                    Math.random() * 3
+                );
+            }
+            
+            // Draw crown in center
+            drawCrown(ctx, size * 0.8, size / 2, size * 0.42);
+            
+            // Add text below crown
+            ctx.fillStyle = '#ffffff';
+            ctx.font = `bold ${size * 0.08}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.fillText('ROYAL', size / 2, size * 0.72);
+            
+            ctx.font = `${size * 0.065}px Arial`;
+            ctx.fillText('POKER', size / 2, size * 0.80);
+        }
+        
+        function downloadIcon(canvasId, filename) {
+            const canvas = document.getElementById(canvasId);
+            const url = canvas.toDataURL('image/png');
+            const link = document.createElement('a');
+            link.download = filename;
+            link.href = url;
+            link.click();
+        }
+        
+        // Generate icons on load
+        window.onload = function() {
+            createIcon('icon192');
+            createIcon('icon512');
+        };
+    </script>
+</body>
+</html>
