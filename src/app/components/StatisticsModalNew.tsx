@@ -65,9 +65,9 @@ export default function StatisticsModalNew({
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-2"
+            className="fixed inset-1 sm:inset-2 md:inset-0 z-50 flex items-center justify-center p-1 sm:p-2"
           >
-            <motion.div className="w-full max-w-6xl max-h-[96vh] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-xl shadow-2xl overflow-hidden flex flex-col border-2 border-yellow-500/30">
+            <motion.div className="w-full max-w-6xl max-h-[98vh] sm:max-h-[96vh] bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-lg sm:rounded-xl shadow-2xl overflow-hidden flex flex-col border-2 border-yellow-500/30">
               
               {/* Header - Compact */}
               <div className="bg-gradient-to-r from-yellow-600 to-yellow-500 px-4 py-2 flex items-center justify-between border-b-2 border-yellow-400 flex-shrink-0">

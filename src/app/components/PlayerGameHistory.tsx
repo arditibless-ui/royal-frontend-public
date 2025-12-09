@@ -95,9 +95,9 @@ export default function PlayerGameHistory({ isOpen, onClose }: PlayerGameHistory
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            className="fixed inset-4 sm:inset-8 md:inset-16 lg:inset-24 z-50 overflow-hidden"
+            className="fixed inset-2 sm:inset-4 md:inset-8 lg:inset-16 z-50 overflow-hidden"
           >
-            <div className="w-full h-full bg-gradient-to-br from-gray-900 via-purple-900/30 to-gray-900 rounded-2xl border-2 border-purple-500/50 shadow-2xl flex flex-col">
+            <div className="w-full h-full bg-gradient-to-br from-gray-900 via-purple-900/30 to-gray-900 rounded-xl sm:rounded-2xl border-2 border-purple-500/50 shadow-2xl flex flex-col">
               {/* Header */}
               <div className="flex justify-between items-center p-4 sm:p-6 border-b border-purple-500/30">
                 <div className="flex items-center gap-3">
