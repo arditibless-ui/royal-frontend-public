@@ -1,7 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable standalone output for Docker
-  output: 'standalone',
   trailingSlash: false,
   images: {
     unoptimized: true
@@ -11,6 +9,9 @@ const nextConfig = {
   },
   typescript: {
     ignoreBuildErrors: true,
+  },
+  generateBuildId: async () => {
+    return `build-${Date.now()}`
   }
 };
 
