@@ -408,6 +408,14 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     }
   }, []) // Run once on mount
 
+  // Fetch player balances whenever room players change
+  useEffect(() => {
+    if (room && room.players && room.players.length > 0) {
+      console.log('🔄 Room players changed, fetching balances...')
+      fetchPlayerBalances()
+    }
+  }, [room?.players?.length]) // Re-fetch when player count changes
+
   const fetchRoom = async () => {
     // Don't fetch if game has been initialized - check both ref AND localStorage
     const isGameActive = gameActiveRef.current || localStorage.getItem(`game_active_${roomCode}`) === 'true'
@@ -638,11 +646,21 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
   }
 
   const fetchPlayerBalances = async () => {
-    if (!API_URL || !room) return
+    if (!API_URL || !room || !room.players || room.players.length === 0) {
+      console.log('💰 Skipping balance fetch - no room or players yet')
+      return
+    }
     
     try {
       const token = localStorage.getItem('token')
-      const playerIds = room.players.map(p => p._id)
+      const playerIds = room.players.map(p => p._id).filter(id => id) // Filter out undefined IDs
+      
+      if (playerIds.length === 0) {
+        console.log('💰 No valid player IDs to fetch')
+        return
+      }
+      
+      console.log(`💰 Fetching balances for ${playerIds.length} players...`)
       
       // Fetch balances for all players in the room
       const balances: Record<string, number> = {}
