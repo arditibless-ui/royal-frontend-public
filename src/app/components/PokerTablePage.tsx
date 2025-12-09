@@ -416,6 +416,14 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     }
   }, [room?.players?.length]) // Re-fetch when player count changes
 
+  // Fetch balances immediately when component mounts
+  useEffect(() => {
+    console.log('💰 Fetching initial balances on mount')
+    if (room && room.players && room.players.length > 0) {
+      fetchPlayerBalances()
+    }
+  }, [room])
+
   const fetchRoom = async () => {
     // Don't fetch if game has been initialized - check both ref AND localStorage
     const isGameActive = gameActiveRef.current || localStorage.getItem(`game_active_${roomCode}`) === 'true'
@@ -884,7 +892,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       }, 3000)
     })
     
-    // Listen for chat messages from other players
+    // Listen for chat messages from ALL players (including self)
     socket.on('room-message', (data: { username: string, message: string, timestamp: Date }) => {
       console.log('💬 Chat message received:', data)
       
@@ -901,20 +909,18 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       // Add message to chat history
       setChatMessages(prev => [...prev, formattedMessage])
       
-      // Show chat bubble for other players' messages (not own messages)
-      if (data.username !== profile?.username) {
-        const bubble = {
-          ...formattedMessage,
-          id: Date.now()
-        }
-        
-        setActiveBubbles(prev => [...prev, bubble])
-        
-        // Auto-remove bubble after 5 seconds
-        setTimeout(() => {
-          setActiveBubbles(prev => prev.filter(b => b.id !== bubble.id))
-        }, 5000)
+      // Show chat bubble for ALL players' messages
+      const bubble = {
+        ...formattedMessage,
+        id: Date.now()
       }
+      
+      setActiveBubbles(prev => [...prev, bubble])
+      
+      // Auto-remove bubble after 5 seconds
+      setTimeout(() => {
+        setActiveBubbles(prev => prev.filter(b => b.id !== bubble.id))
+      }, 5000)
     })
     
     // Auto-start game when all players are ready
@@ -2542,6 +2548,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     }
     
     // Send message via socket to all players in room
+    // Backend will broadcast to everyone including sender via 'room-message'
     if (socketRef.current && room) {
       socketRef.current.emit('send-message', {
         roomCode: room.code,
@@ -2550,18 +2557,8 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       console.log('💬 Chat message sent via socket:', chatMessage.trim())
     }
     
-    // Add to chat history (permanent)
-    setChatMessages(prev => [...prev, newMessage])
-    
-    // Add to active bubbles (temporary - 5 seconds)
-    setActiveBubbles(prev => [...prev, newMessage])
-    
+    // Don't add locally - backend will send it back via 'room-message'
     setChatMessage('')
-    
-    // Auto-remove speech bubble after 5 seconds (but keep in chat history)
-    setTimeout(() => {
-      setActiveBubbles(prev => prev.filter(msg => msg.timestamp !== newMessage.timestamp))
-    }, 5000)
   }
 
   // Cleanup interval on unmount
@@ -3407,77 +3404,6 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
               >
                 <Settings size={14} className="sm:w-4 sm:h-4 md:w-[18px] md:h-[18px]" />
                 <span className="hidden lg:inline">Settings</span>
-              </motion.button>
-
-              {/* Fullscreen Button */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={async () => {
-                  soundManager.playClick()
-                  console.log('🔍 Fullscreen button clicked')
-                  try {
-                    const elem = document.getElementById('poker-fullscreen-container');
-                    if (!elem) {
-                      console.error('❌ Container element not found')
-                      alert('Cannot find poker container')
-                      return
-                    }
-                    
-                    const isFullscreen = document.fullscreenElement || (document as any).webkitFullscreenElement || (document as any).mozFullScreenElement;
-                    
-                    console.log('🔍 Current fullscreen state:', isFullscreen ? 'IN FULLSCREEN' : 'NOT IN FULLSCREEN')
-                    console.log('🔍 Container element:', elem)
-                    
-                    if (!isFullscreen) {
-                      // Enter fullscreen
-                      console.log('🔍 Attempting to enter fullscreen on container...')
-                      if (elem.requestFullscreen) {
-                        console.log('🔍 Using standard requestFullscreen')
-                        await elem.requestFullscreen();
-                      } else if ((elem as any).webkitRequestFullscreen) {
-                        console.log('🔍 Using webkitRequestFullscreen (Safari)')
-                        await (elem as any).webkitRequestFullscreen();
-                      } else if ((elem as any).webkitEnterFullscreen) {
-                        console.log('🔍 Using webkitEnterFullscreen (iOS Safari fallback)')
-                        await (elem as any).webkitEnterFullscreen();
-                      } else if ((elem as any).mozRequestFullScreen) {
-                        console.log('🔍 Using mozRequestFullScreen (Firefox)')
-                        await (elem as any).mozRequestFullScreen();
-                      } else if ((elem as any).msRequestFullscreen) {
-                        console.log('🔍 Using msRequestFullscreen (IE/Edge)')
-                        await (elem as any).msRequestFullscreen();
-                      } else {
-                        console.error('❌ No fullscreen API available')
-                        alert('Fullscreen not supported on this browser')
-                      }
-                      console.log('✅ Fullscreen request sent')
-                    } else {
-                      // Exit fullscreen
-                      console.log('🔍 Attempting to exit fullscreen...')
-                      if (document.exitFullscreen) {
-                        await document.exitFullscreen();
-                      } else if ((document as any).webkitExitFullscreen) {
-                        await (document as any).webkitExitFullscreen();
-                      } else if ((document as any).mozCancelFullScreen) {
-                        await (document as any).mozCancelFullScreen();
-                      } else if ((document as any).msExitFullscreen) {
-                        await (document as any).msExitFullscreen();
-                      }
-                      console.log('✅ Exited fullscreen')
-                    }
-                  } catch (err) {
-                    console.error('❌ Fullscreen error:', err);
-                    alert('Fullscreen failed: ' + (err as Error).message)
-                  }
-                }}
-                onMouseEnter={() => soundManager.playHover()}
-                className="adaptive-button flex items-center gap-1 bg-black/40 text-white rounded-lg hover:bg-black/60 transition-colors"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
-                </svg>
-                <span className="hidden lg:inline">Fullscreen</span>
               </motion.button>
 
               {/* Notification Center */}
