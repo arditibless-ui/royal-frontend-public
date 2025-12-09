@@ -1,0 +1,66 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background - Dark Green -->
+  <defs>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#065f46;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#064e3b;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="crownShine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.4" />
+      <stop offset="50%" style="stop-color:#ffffff;stop-opacity:0.1" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Dark green gradient background -->
+  <rect width="512" height="512" fill="url(#bgGradient)" rx="102.4"/>
+  
+  <!-- Lucide Crown icon - proper design -->
+  <g transform="translate(256, 220) scale(4.5)">
+    <!-- Main crown path (exact Lucide Crown shape) -->
+    <path d="M 11.562 2.537 L 12 1 L 18 3.5 L 18 7 L 22 6 L 22 10 L 2 10 L 2 6 L 6 7 L 6 3.5 L 12 1 L 12.438 2.537" 
+          fill="none"
+          stroke="#facc15" 
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <path d="M 2 10 L 9.189 14.34 C 10.882 15.318 13.118 15.318 14.811 14.34 L 22 10" 
+          fill="none"
+          stroke="#facc15" 
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <!-- Fill for crown -->
+    <path d="M 2 6 L 2 10 L 9.189 14.34 C 10.882 15.318 13.118 15.318 14.811 14.34 L 22 10 L 22 6 L 18 7 L 18 3.5 L 12 1 L 6 3.5 L 6 7 Z" 
+          fill="#facc15"
+          opacity="0.95"/>
+    
+    <!-- Shine overlay -->
+    <path d="M 2 6 L 2 10 L 9.189 14.34 C 10.882 15.318 13.118 15.318 14.811 14.34 L 22 10 L 22 6 L 18 7 L 18 3.5 L 12 1 L 6 3.5 L 6 7 Z" 
+          fill="url(#crownShine)"/>
+    
+    <!-- Crown outline -->
+    <path d="M 2 6 L 2 10 L 9.189 14.34 C 10.882 15.318 13.118 15.318 14.811 14.34 L 22 10 L 22 6 L 18 7 L 18 3.5 L 12 1 L 6 3.5 L 6 7 Z" 
+          fill="none"
+          stroke="#f59e0b" 
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+    
+    <!-- Glow effect -->
+    <path d="M 2 6 L 2 10 L 9.189 14.34 C 10.882 15.318 13.118 15.318 14.811 14.34 L 22 10 L 22 6 L 18 7 L 18 3.5 L 12 1 L 6 3.5 L 6 7 Z" 
+          fill="none"
+          stroke="#fbbf24" 
+          stroke-width="3.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          opacity="0.3"
+          filter="blur(2px)"/>
+  </g>
+  
+  <!-- Text -->
+  <text x="256" y="380" font-family="Arial, sans-serif" font-size="42" font-weight="bold" fill="#ffffff" text-anchor="middle">ROYAL</text>
+  <text x="256" y="420" font-family="Arial, sans-serif" font-size="34" fill="#ffffff" text-anchor="middle" opacity="0.95">POKER</text>
+</svg>

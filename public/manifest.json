@@ -1,24 +1,30 @@
 {
-  "name": "Royal Poker - Texas Hold'em",
+  "name": "Royal Poker",
   "short_name": "Royal Poker",
-  "description": "Premium multiplayer Texas Hold'em poker game",
+  "description": "Premium multiplayer Texas Hold'em poker game with crown logo",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0f172a",
-  "theme_color": "#7c3aed",
+  "background_color": "#065f46",
+  "theme_color": "#065f46",
   "orientation": "any",
   "icons": [
     {
-      "src": "/images/poker-icon-192.png",
+      "src": "/poker-icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/images/poker-icon-512.png",
+      "src": "/poker-icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
+    },
+    {
+      "src": "/poker-icon-512.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
     }
   ]
 }
