@@ -34,7 +34,8 @@ export default function RootLayout({
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
         <meta name="apple-mobile-web-app-title" content="Royal Poker" />
-        <link rel="apple-touch-icon" href="/images/poker-icon-192.png" />
+        <link rel="apple-touch-icon" href="/poker-icon-192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/poker-icon-512.png" />
         
         {/* Android PWA Support */}
         <meta name="mobile-web-app-capable" content="yes" />

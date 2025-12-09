@@ -1,20 +1,16 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/next"
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "/"
-    }
-  ],
   "env": {
-    "NEXT_PUBLIC_API_URL": "",
-    "NEXT_PUBLIC_USE_MOCK_API": "false",
-    "NEXT_TELEMETRY_DISABLED": "1"
-  }
+    "NEXT_PUBLIC_API_URL": "https://royal-poker-backend.onrender.com"
+  },
+  "headers": [
+    {
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        }
+      ]
+    }
+  ]
 }
