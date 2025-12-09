@@ -11,6 +11,7 @@ import ManagerHistory from './ManagerHistory'
 import PlayerGameHistory from './PlayerGameHistory'
 import FriendsMenu from '../../components/FriendsMenu'
 import PlayerSettings from '../../components/PlayerSettings'
+import InstallPWAModal from '@/components/InstallPWAModal'
 
 interface DashboardProps {
   user: any
@@ -23,6 +24,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   const [copiedCode, setCopiedCode] = useState('')
   const [joiningRoom, setJoiningRoom] = useState(false)
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null)
+  const [showInstallModal, setShowInstallModal] = useState(false)
   const [cooldownRemaining, setCooldownRemaining] = useState<number>(0)
   const [offenseCount, setOffenseCount] = useState<number>(0)
   const [showStatistics, setShowStatistics] = useState(false)
@@ -81,6 +83,19 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   }
 
   const joinRoom = async (code: string, buyIn?: number) => {
+    // Check if app is installed (standalone mode) - REQUIRED for mobile
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches ||
+                        (window.navigator as any).standalone ||
+                        document.referrer.includes('android-app://');
+    
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    
+    // If mobile and NOT in standalone mode, show installation modal
+    if (isMobile && !isStandalone) {
+      setShowInstallModal(true);
+      return;
+    }
+    
     // If resuming active room, skip checks and join directly
     if (activeRoomCode === code) {
       setNotification({
@@ -667,6 +682,12 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
       {showFriendsMenu && (
         <FriendsMenu onClose={() => setShowFriendsMenu(false)} />
       )}
+
+      {/* Install PWA Modal */}
+      <InstallPWAModal
+        isOpen={showInstallModal}
+        onClose={() => setShowInstallModal(false)}
+      />
     </div>
   )
 }
