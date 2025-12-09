@@ -10,9 +10,9 @@ export const metadata: Metadata = {
 
 export const viewport = {
   width: 'device-width',
-  initialScale: 1,
+  initialScale: 0.85,
   maximumScale: 1,
-  minimumScale: 1,
+  minimumScale: 0.85,
   userScalable: false,
   viewportFit: 'cover',
   // iOS specific - hide Safari UI in landscape
