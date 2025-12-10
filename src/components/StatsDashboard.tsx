@@ -65,13 +65,13 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
           
           // Map backend stats to frontend format with safe defaults
           setStats({
-            handsPlayed: data?.statistics?.handsPlayed || data?.statistics?.totalGames || 0,
-            handsWon: data?.statistics?.wins || 0,
-            biggestWin: data?.statistics?.biggestWin?.amount || data?.statistics?.biggestWin || 0,
-            biggestLoss: data?.statistics?.biggestLoss?.amount || data?.statistics?.biggestLoss || 0,
-            totalWinnings: data?.statistics?.totalWinnings || 0,
-            vpip: 0, // Not tracked yet
-            pfr: 0   // Not tracked yet
+            handsPlayed: Number(data?.statistics?.handsPlayed || data?.statistics?.totalGames || 0),
+            handsWon: Number(data?.statistics?.wins || 0),
+            biggestWin: Number(data?.statistics?.biggestWin?.amount || data?.statistics?.biggestWin || 0),
+            biggestLoss: Number(data?.statistics?.biggestLoss?.amount || data?.statistics?.biggestLoss || 0),
+            totalWinnings: Number(data?.statistics?.totalWinnings || 0),
+            vpip: Number(data?.statistics?.vpip || 0),
+            pfr: Number(data?.statistics?.pfr || 0)
           })
         } else {
           console.error('Failed to fetch statistics:', response.statusText)
@@ -207,7 +207,7 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
                   <span className="text-blue-400 text-sm landscape:text-xs">📊</span>
                   <span className="text-gray-300 text-sm landscape:text-xs">VPIP (Voluntarily Put $ In Pot)</span>
                 </div>
-                <span className="text-blue-400 font-bold landscape:text-sm">{stats.vpip.toFixed(1)}%</span>
+                <span className="text-blue-400 font-bold landscape:text-sm">{(stats.vpip || 0).toFixed(1)}%</span>
               </div>
 
               {/* PFR */}
@@ -216,7 +216,7 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
                   <span className="text-purple-400 text-sm landscape:text-xs">📈</span>
                   <span className="text-gray-300 text-sm landscape:text-xs">PFR (Pre-Flop Raise %)</span>
                 </div>
-                <span className="text-purple-400 font-bold landscape:text-sm">{stats.pfr.toFixed(1)}%</span>
+                <span className="text-purple-400 font-bold landscape:text-sm">{(stats.pfr || 0).toFixed(1)}%</span>
               </div>
             </div>
             </>
