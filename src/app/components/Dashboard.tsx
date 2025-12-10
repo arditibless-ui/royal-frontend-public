@@ -327,7 +327,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   }, [cooldownRemaining])
 
   return (
-    <div className="min-h-screen landscape:min-h-[100dvh] p-3 sm:p-6 landscape:p-3 portrait:pt-[calc(env(safe-area-inset-top)+0.75rem)]">
+    <div className="min-h-screen landscape:min-h-[100dvh] p-3 sm:p-6 landscape:p-3 portrait:pt-[calc(env(safe-area-inset-top)+0.75rem)] portrait:-mt-[env(safe-area-inset-top)]">
       {/* Join Notification - Top Center */}
       <AnimatePresence>
         {notification && (
