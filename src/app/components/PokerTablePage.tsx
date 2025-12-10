@@ -806,6 +806,75 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     // Listen for ready status changes
     socket.on('player-ready-changed', (data) => {
       console.log('🔔 Player ready status changed:', data)
+    
+    // Listen for players leaving the room
+    socket.on('player-left', async (data: { playerId: string, username: string, message: string }) => {
+      console.log('🚪 Player left:', data)
+      
+      // Fetch updated room data to refresh player list
+      try {
+        const token = localStorage.getItem('token')
+        const response = await fetch(`${API_URL}/api/games/room/${roomCode}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        
+        if (response.ok) {
+          const roomData = await response.json()
+          updateRoom(() => roomData.room)
+        }
+      } catch (err) {
+        console.error('Failed to fetch updated room after player left:', err)
+      }
+      
+      // Show notification
+      setCenterNotification({
+        show: true,
+        message: data.message || `${data.username} left the room`,
+        type: 'info'
+      })
+      
+      setTimeout(() => {
+        setCenterNotification({ show: false, message: '', type: 'info' })
+      }, 3000)
+    })
+    
+    // Listen for player kicked events
+    socket.on('player-kicked', async (data: { userId: string, username: string, reason: string }) => {
+      console.log('🚫 Player kicked:', data)
+      
+      // If it's us who got kicked, go back to lobby
+      if (data.userId === currentUserId) {
+        alert(`You were kicked: ${data.reason}`)
+        onBack()
+        return
+      }
+      
+      // Fetch updated room data
+      try {
+        const token = localStorage.getItem('token')
+        const response = await fetch(`${API_URL}/api/games/room/${roomCode}`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        })
+        
+        if (response.ok) {
+          const roomData = await response.json()
+          updateRoom(() => roomData.room)
+        }
+      } catch (err) {
+        console.error('Failed to fetch room after kick:', err)
+      }
+      
+      // Show notification
+      setCenterNotification({
+        show: true,
+        message: `${data.username} was kicked: ${data.reason}`,
+        type: 'warning'
+      })
+      
+      setTimeout(() => {
+        setCenterNotification({ show: false, message: '', type: 'info' })
+      }, 3000)
+    })
       soundManager.playClick()
       
       // Update room state with new ready status
@@ -2473,6 +2542,12 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     setShowLeaveConfirmation(false)
     
     try {
+      // Emit leave-room socket event first
+      if (socketRef.current) {
+        console.log('📤 Emitting leave-room event')
+        socketRef.current.emit('leave-room', { roomCode })
+      }
+      
       // Call leave endpoint
       const token = localStorage.getItem('token')
       const response = await fetch(`${API_URL}/api/games/leave/${roomCode}`, {
@@ -2491,6 +2566,12 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
     } catch (err) {
       console.error('Failed to call leave endpoint:', err)
     } finally {
+      // Disconnect socket
+      if (socketRef.current) {
+        socketRef.current.disconnect()
+        socketRef.current = null
+      }
+      
       // Always allow navigation back even if API call fails
       gameActiveRef.current = false
       localStorage.removeItem(`game_active_${roomCode}`)
@@ -3395,8 +3476,8 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                 className="adaptive-button flex items-center gap-1 bg-black/40 text-white rounded-lg hover:bg-black/60 transition-colors"
               >
                 <ArrowLeft size={14} className="sm:w-4 sm:h-4 md:w-[18px] md:h-[18px]" />
-                <span className="hidden lg:inline">Back to Admin</span>
-                <span className="lg:hidden">Back</span>
+                <span className="hidden lg:inline">Leave</span>
+                <span className="lg:hidden">Leave</span>
               </motion.button>
 
               {/* Settings Button */}
