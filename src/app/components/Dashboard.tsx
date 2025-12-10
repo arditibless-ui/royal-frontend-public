@@ -327,7 +327,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
   }, [cooldownRemaining])
 
   return (
-    <div className="min-h-screen landscape:min-h-[100dvh] p-3 sm:p-6 landscape:p-3">
+    <div className="min-h-screen landscape:min-h-[100dvh] p-3 sm:p-6 landscape:p-3 portrait:pt-[calc(env(safe-area-inset-top)+0.75rem)]">
       {/* Join Notification - Top Center */}
       <AnimatePresence>
         {notification && (
@@ -336,7 +336,7 @@ export default function Dashboard({ user, onLogout }: DashboardProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -50, scale: 0.8 }}
             transition={{ type: "spring", duration: 0.5 }}
-            className="fixed top-6 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-[90vw] sm:w-[calc(100%-2rem)] max-w-md px-4 sm:px-0"
+            className="fixed left-1/2 -translate-x-1/2 z-50 pointer-events-none w-[90vw] sm:w-[calc(100%-2rem)] max-w-md px-4 sm:px-0 portrait:top-[calc(env(safe-area-inset-top)+1.5rem)] landscape:top-6"
           >
             <div className={`px-6 py-4 rounded-2xl shadow-2xl border-2 backdrop-blur-sm ${
               notification.type === 'success' 
