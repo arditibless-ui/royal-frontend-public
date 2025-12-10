@@ -3404,7 +3404,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: -300 }}
                 transition={{ type: "spring", stiffness: 200, damping: 20 }}
-                className="fixed top-28 left-4 z-40 w-48 landscape:top-24 landscape:left-4 lg:top-32 lg:left-6 xl:w-56"
+                className="fixed top-[calc(7rem+env(safe-area-inset-top))] landscape:top-24 left-4 landscape:left-4 z-40 w-48 lg:top-32 lg:left-6 xl:w-56"
               >
                 <div className="bg-gradient-to-br from-red-600/95 to-red-700/95 border-2 border-red-400 rounded-lg shadow-xl p-2 text-white backdrop-blur-sm">
                   <div className="flex items-center gap-1 mb-1">
@@ -4782,7 +4782,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                       y: (visualTimeLeft <= 5 && visualTimeLeft > 0) ? [-1, 1, -1, 1, 0] : 0
                     }}
                     exit={{ scale: 0, opacity: 0 }}
-                    className="fixed top-16 right-4 landscape:top-4 landscape:right-4 z-40"
+                    className="fixed top-[calc(4rem+env(safe-area-inset-top))] landscape:top-4 right-4 landscape:right-4 z-40"
                     transition={{
                       scale: { duration: 0.3 },
                       opacity: { duration: 0.3 },
@@ -4837,7 +4837,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -50, scale: 0.8 }}
                   transition={{ type: "spring", duration: 0.5 }}
-                  className="fixed top-16 sm:top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-[90vw] sm:w-[calc(100%-2rem)] max-w-md px-4 sm:px-0"
+                  className="fixed top-[calc(4rem+env(safe-area-inset-top))] landscape:top-16 sm:top-[calc(5rem+env(safe-area-inset-top))] sm:landscape:top-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none w-[90vw] sm:w-[calc(100%-2rem)] max-w-md px-4 sm:px-0"
                 >
                   <div className="bg-gradient-to-r from-green-600 via-green-500 to-green-600 text-white px-6 py-3 sm:px-8 sm:py-4 rounded-2xl shadow-2xl border-2 border-yellow-400 backdrop-blur-sm">
                     <div className="flex items-center gap-3">
@@ -4883,7 +4883,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   initial={{ opacity: 0, y: -50 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: -50 }}
-                  className="fixed top-4 left-1/2 -translate-x-1/2 z-[100] bg-yellow-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3"
+                  className="fixed top-[calc(1rem+env(safe-area-inset-top))] landscape:top-4 left-1/2 -translate-x-1/2 z-[100] bg-yellow-600 text-white px-6 py-3 rounded-full shadow-2xl flex items-center gap-3"
                 >
                   <motion.div
                     animate={{ rotate: 360 }}

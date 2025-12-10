@@ -100,7 +100,7 @@ export default function RegisterScreen({ onNavigate, onRegister }: RegisterScree
   }
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center p-4">
+    <div className="relative min-h-screen pt-[env(safe-area-inset-top)] landscape:pt-0 flex items-center justify-center p-4">
       {/* Background overlay */}
       <div className="absolute inset-0 bg-black/50" />
       

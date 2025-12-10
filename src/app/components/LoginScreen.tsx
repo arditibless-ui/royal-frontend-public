@@ -111,7 +111,7 @@ export default function LoginScreen({ onNavigate, onLogin }: LoginScreenProps) {
   }
 
   return (
-    <div className="relative min-h-screen landscape:min-h-[100dvh] flex items-center justify-center p-4 landscape:p-2 landscape:py-3">
+    <div className="relative min-h-screen pt-[env(safe-area-inset-top)] landscape:pt-0 landscape:min-h-[100dvh] flex items-center justify-center p-4 landscape:p-2 landscape:py-3">
       {/* Background image - portrait for portrait, landscape for landscape */}
       <div className="absolute inset-0">
         <div 

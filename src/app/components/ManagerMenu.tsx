@@ -34,8 +34,8 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
   const [roomName, setRoomName] = useState('')
   const [maxPlayers, setMaxPlayers] = useState('9')
   const [buyIn, setBuyIn] = useState('100')
-  const [smallBlind, setSmallBlind] = useState('5')
-  const [bigBlind, setBigBlind] = useState('10')
+  const [smallBlind, setSmallBlind] = useState('0.01')
+  const [bigBlind, setBigBlind] = useState('0.02')
   const [isPrivate, setIsPrivate] = useState(false)
   const [gameMode, setGameMode] = useState<'cash' | 'tournament'>('cash')
   const [blindLevelDuration, setBlindLevelDuration] = useState('10')
@@ -205,8 +205,8 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
 
     const maxPlayersNum = parseInt(maxPlayers)
     const buyInNum = parseInt(buyIn)
-    const smallBlindNum = parseInt(smallBlind)
-    const bigBlindNum = parseInt(bigBlind)
+    const smallBlindNum = parseFloat(smallBlind)
+    const bigBlindNum = parseFloat(bigBlind)
 
     if (isNaN(maxPlayersNum) || maxPlayersNum < 2 || maxPlayersNum > 9) {
       showNotification('Max players must be between 2 and 9', 'error')
@@ -218,8 +218,8 @@ export default function ManagerMenu({ onClose, managerName }: ManagerMenuProps) 
       return
     }
 
-    if (isNaN(smallBlindNum) || isNaN(bigBlindNum) || smallBlindNum < 1 || bigBlindNum < 1) {
-      showNotification('Blinds must be at least 1', 'error')
+    if (isNaN(smallBlindNum) || isNaN(bigBlindNum) || smallBlindNum < 0.01 || bigBlindNum < 0.01) {
+      showNotification('Blinds must be at least 0.01', 'error')
       return
     }
 

@@ -637,7 +637,7 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
           animate={{ opacity: 1, y: 0, scale: 1 }}
           exit={{ opacity: 0, y: -100, scale: 0.8 }}
           transition={{ type: "spring", stiffness: 300, damping: 25 }}
-          className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[90vw] sm:w-[calc(100%-2rem)] max-w-md px-4 sm:px-0"
+          className="fixed top-[calc(1.5rem+env(safe-area-inset-top))] landscape:top-6 left-1/2 -translate-x-1/2 z-50 w-[90vw] sm:w-[calc(100%-2rem)] max-w-md px-4 sm:px-0"
         >
           <motion.div 
             className={`rounded-2xl shadow-2xl border-2 p-6 backdrop-blur-lg ${
@@ -1097,7 +1097,7 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
           <PokerTablePage roomCode={viewingRoom} onBack={() => setViewingRoom(null)} isAdminView={true} />
         </div>
       ) : (
-        <div className="min-h-screen p-4">
+        <div className="min-h-screen pt-[env(safe-area-inset-top)] landscape:pt-0 p-4">
       
       {/* Admin Dashboard Content - Fully Responsive */}
       <div className="min-h-[100dvh]">
@@ -1661,7 +1661,7 @@ export default function AdminDashboard({ user, onLogout }: AdminDashboardProps) 
                       password, 
                       role, 
                       credits, 
-                      managerId: role === 'player' ? managerId : null 
+                      managerId: role === 'player' ? managerId : undefined 
                     }),
                   })
 
