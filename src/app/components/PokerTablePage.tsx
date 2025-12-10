@@ -18,6 +18,7 @@ import ActionHistory from '../../components/ActionHistory'
 import FloatingChipsBackground from '../../components/FloatingChipsBackground'
 import StatsDashboard from '../../components/StatsDashboard'
 import GameHistoryModal from '../../components/GameHistoryModal'
+import AnimatedChipCount from '../../components/AnimatedChipCount'
 import GameSettings from './GameSettings'
 import { useSwipeGesture } from '../hooks/useSwipeGesture'
 import PlayerSpotlight from '../../components/PlayerSpotlight'
@@ -4232,15 +4233,12 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                         )}
                       </div>
                       
-                      {/* Enhanced Chips Display with Glow */}
-                      <div className={`flex items-center justify-center gap-1.5 text-sm sm:text-base md:text-xl font-bold transition-all ${
-                        playerPerspective === seatPosition
-                          ? 'text-yellow-300 drop-shadow-[0_0_8px_rgba(253,224,71,0.8)]'
-                          : 'text-yellow-400 drop-shadow-md'
-                      }`}>
-                        <Coins size={16} className="sm:w-[18px] sm:h-[18px] md:w-[22px] md:h-[22px] animate-pulse" />
-                        <span className="tracking-wide">${player.chips.toLocaleString()}</span>
-                      </div>
+                      {/* Enhanced Chips Display with Smooth Animation */}
+                      <AnimatedChipCount
+                        value={player.chips}
+                        isCurrentPlayer={playerPerspective === seatPosition}
+                        duration={600}
+                      />
 
                       {/* Real-time Credit Balance Display */}
                       {playerBalances[player._id] !== undefined && (
