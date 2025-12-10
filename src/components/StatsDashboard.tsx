@@ -35,10 +35,23 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
   useEffect(() => {
     // Fetch stats from API
     const fetchStats = async () => {
+      if (!isVisible) return;
+      
       try {
         setLoading(true)
         const token = localStorage.getItem('token')
-        const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        if (!token) {
+          console.error('No auth token found')
+          setLoading(false)
+          return
+        }
+        
+        const API_URL = process.env.NEXT_PUBLIC_API_URL
+        if (!API_URL) {
+          console.error('API URL not configured')
+          setLoading(false)
+          return
+        }
         
         const response = await fetch(`${API_URL}/api/users/statistics`, {
           headers: {
@@ -50,13 +63,13 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
           const data = await response.json()
           console.log('📊 Statistics fetched:', data)
           
-          // Map backend stats to frontend format
+          // Map backend stats to frontend format with safe defaults
           setStats({
-            handsPlayed: data.statistics?.handsPlayed || data.statistics?.totalGames || 0,
-            handsWon: data.statistics?.wins || 0,
-            biggestWin: data.statistics?.biggestWin?.amount || data.statistics?.biggestWin || 0,
-            biggestLoss: data.statistics?.biggestLoss?.amount || data.statistics?.biggestLoss || 0,
-            totalWinnings: data.statistics?.totalWinnings || 0,
+            handsPlayed: data?.statistics?.handsPlayed || data?.statistics?.totalGames || 0,
+            handsWon: data?.statistics?.wins || 0,
+            biggestWin: data?.statistics?.biggestWin?.amount || data?.statistics?.biggestWin || 0,
+            biggestLoss: data?.statistics?.biggestLoss?.amount || data?.statistics?.biggestLoss || 0,
+            totalWinnings: data?.statistics?.totalWinnings || 0,
             vpip: 0, // Not tracked yet
             pfr: 0   // Not tracked yet
           })
@@ -70,9 +83,7 @@ export default function StatsDashboard({ isVisible, onClose, playerName }: Stats
       }
     }
 
-    if (isVisible) {
-      fetchStats()
-    }
+    fetchStats()
   }, [isVisible])
 
   if (!isVisible) return null

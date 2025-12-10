@@ -36,8 +36,8 @@ export default function WelcomeScreen({ onNavigate }: WelcomeScreenProps) {
 
   return (
     <div className="relative min-h-screen pt-[env(safe-area-inset-top)] landscape:pt-0 flex items-center justify-center overflow-hidden">
-      {/* Background image - portrait for portrait, landscape for landscape */}
-      <div className="absolute inset-0">
+      {/* Background image - portrait for portrait, landscape for landscape - EXTENDS ABOVE NOTCH */}
+      <div className="fixed inset-0 -top-[env(safe-area-inset-top)]">
         <div 
           className="absolute inset-0 bg-cover bg-center portrait:block landscape:hidden"
           style={{ backgroundImage: "url('/images/portrait.png')" }}

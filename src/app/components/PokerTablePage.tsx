@@ -987,16 +987,17 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       setChatMessages(prev => [...prev, formattedMessage])
       
       // Show chat bubble for ALL players' messages
+      const bubbleId = Date.now() + Math.random() // Unique ID
       const bubble = {
         ...formattedMessage,
-        id: Date.now()
+        id: bubbleId
       }
       
       setActiveBubbles(prev => [...prev, bubble])
       
       // Auto-remove bubble after 5 seconds
       setTimeout(() => {
-        setActiveBubbles(prev => prev.filter(b => b.id !== bubble.id))
+        setActiveBubbles(prev => prev.filter(b => b.id !== bubbleId))
       }, 5000)
     })
     
@@ -4115,12 +4116,12 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   }}
                 >
                   <div 
-                    className={`relative backdrop-blur-md rounded-2xl border-2 transition-all duration-300 shadow-2xl player-card-entrance ${
+                    className={`relative backdrop-blur-md rounded-2xl transition-all duration-300 shadow-2xl player-card-entrance ${
                       playerPerspective === seatPosition 
-                        ? 'p-3 md:p-4 w-[9rem] md:w-[13rem] border-purple-500 bg-gradient-to-br from-purple-900/80 via-purple-800/60 to-purple-900/80 shadow-[0_0_40px_rgba(168,85,247,0.6)]' 
+                        ? 'p-3 md:p-4 w-[9rem] md:w-[13rem] border-4 border-purple-500 bg-gradient-to-br from-purple-900/80 via-purple-800/60 to-purple-900/80 shadow-[0_0_40px_rgba(168,85,247,0.6)]' 
                         : (room.gameState?.currentPlayer !== undefined && gameIndex === room.gameState.currentPlayer)
-                          ? 'p-2 md:p-3 w-[8.5rem] md:w-[9rem] border-yellow-400 bg-gradient-to-br from-yellow-900/70 via-amber-900/50 to-yellow-900/70 shadow-[0_0_30px_rgba(250,204,21,0.5)] animate-pulse' 
-                          : 'p-2 md:p-3 w-[8.5rem] md:w-[9rem] border-white/30 bg-gradient-to-br from-slate-900/90 via-slate-800/70 to-slate-900/90'
+                          ? 'p-2 md:p-3 w-[8.5rem] md:w-[9rem] border-4 border-yellow-400 bg-gradient-to-br from-yellow-900/70 via-amber-900/50 to-yellow-900/70 shadow-[0_0_40px_rgba(250,204,21,0.8)] animate-pulse' 
+                          : 'p-2 md:p-3 w-[8.5rem] md:w-[9rem] border-2 border-white/30 bg-gradient-to-br from-slate-900/90 via-slate-800/70 to-slate-900/90'
                     }`}
                   >
                     
@@ -4782,7 +4783,7 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                       y: (visualTimeLeft <= 5 && visualTimeLeft > 0) ? [-1, 1, -1, 1, 0] : 0
                     }}
                     exit={{ scale: 0, opacity: 0 }}
-                    className="fixed top-[calc(4rem+env(safe-area-inset-top))] landscape:top-4 right-4 landscape:right-4 z-40"
+                    className="fixed top-[calc(8rem+env(safe-area-inset-top))] landscape:top-20 right-16 landscape:right-16 z-40"
                     transition={{
                       scale: { duration: 0.3 },
                       opacity: { duration: 0.3 },

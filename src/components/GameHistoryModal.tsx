@@ -35,18 +35,36 @@ export default function GameHistoryModal({ isOpen, onClose, userId }: GameHistor
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && userId) {
       fetchHistory();
+    } else if (isOpen && !userId) {
+      setError('User ID not available');
+      setLoading(false);
     }
-  }, [isOpen]);
+  }, [isOpen, userId]);
 
   const fetchHistory = async () => {
+    if (!userId) {
+      setError('User ID not available');
+      setLoading(false);
+      return;
+    }
+    
     try {
       setLoading(true);
       setError(null);
       
       const token = localStorage.getItem('token');
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/history/games`, {
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+      
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+      if (!apiUrl) {
+        throw new Error('API URL not configured');
+      }
+      
+      const response = await fetch(`${apiUrl}/api/history/games`, {
         headers: {
           'Authorization': `Bearer ${token}`,
         },
@@ -57,10 +75,10 @@ export default function GameHistoryModal({ isOpen, onClose, userId }: GameHistor
       }
 
       const data = await response.json();
-      setHistory(data);
+      setHistory(Array.isArray(data) ? data : []);
     } catch (err) {
       console.error('Error fetching game history:', err);
-      setError('Failed to load game history');
+      setError(err instanceof Error ? err.message : 'Failed to load game history');
     } finally {
       setLoading(false);
     }
