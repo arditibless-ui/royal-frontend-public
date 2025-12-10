@@ -765,6 +765,14 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
       setSocketConnected(false)
     })
     
+    // Handle force disconnect from server (multiple login prevention)
+    socket.on('force-disconnect', (data: { message: string }) => {
+      console.log('🚫 Force disconnected:', data.message)
+      alert(data.message)
+      localStorage.removeItem('token')
+      window.location.href = '/'
+    })
+    
     socket.on('reconnecting', () => {
       if (process.env.NODE_ENV === 'development') {
         console.log('🔄 Socket reconnecting...')
@@ -3443,9 +3451,23 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   {playerPerspective !== null && room && room.players && (() => {
                     const player = room.players.find(p => p.position === playerPerspective)
                     if (player) {
-                      // Always show the account balance from playerBalances, fallback to 0
-                      const accountBalance = playerBalances[player._id] !== undefined ? playerBalances[player._id] : 0
-                      console.log(`💰 Rendering credit display for ${player.username}: $${accountBalance}, playerBalances:`, playerBalances)
+                      // Try multiple ID formats to match playerBalances
+                      let accountBalance = 0
+                      if (playerBalances[player._id] !== undefined) {
+                        accountBalance = playerBalances[player._id]
+                      } else if (currentUserId && playerBalances[currentUserId] !== undefined) {
+                        // Fallback to currentUserId if player._id doesn't match
+                        accountBalance = playerBalances[currentUserId]
+                      } else {
+                        // Last resort: find by username
+                        const matchingPlayer = Object.keys(playerBalances).find(id => {
+                          return room.players.some(p => p._id === id && p.position === playerPerspective)
+                        })
+                        if (matchingPlayer) {
+                          accountBalance = playerBalances[matchingPlayer]
+                        }
+                      }
+                      console.log(`💰 Rendering credit display for ${player.username}: $${accountBalance}, player._id: ${player._id}, currentUserId: ${currentUserId}, playerBalances:`, playerBalances)
                       return (
                         <div className="relative mt-1">
                           <div className="flex items-center gap-1.5 text-xs sm:text-sm text-yellow-300 font-bold bg-black/40 px-2 py-1 rounded-md backdrop-blur-sm">
@@ -3524,8 +3546,22 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
-                    soundManager.playClick()
-                    setShowStats(true)
+                    try {
+                      soundManager.playClick()
+                      if (!currentUserId) {
+                        console.error('❌ Cannot open stats: userId not available')
+                        setCenterNotification({
+                          show: true,
+                          message: 'Unable to load statistics',
+                          type: 'warning'
+                        })
+                        setTimeout(() => setCenterNotification(prev => ({ ...prev, show: false })), 2000)
+                        return
+                      }
+                      setShowStats(true)
+                    } catch (err) {
+                      console.error('❌ Stats button error:', err)
+                    }
                   }}
                   onMouseEnter={() => soundManager.playHover()}
                   className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-purple-600 hover:bg-purple-500 text-white rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap"
@@ -3538,8 +3574,22 @@ export default function PokerTablePage({ roomCode, onBack, isAdminView = false }
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => {
-                    soundManager.playClick()
-                    setShowHistory(true)
+                    try {
+                      soundManager.playClick()
+                      if (!currentUserId) {
+                        console.error('❌ Cannot open history: userId not available')
+                        setCenterNotification({
+                          show: true,
+                          message: 'Unable to load history',
+                          type: 'warning'
+                        })
+                        setTimeout(() => setCenterNotification(prev => ({ ...prev, show: false })), 2000)
+                        return
+                      }
+                      setShowHistory(true)
+                    } catch (err) {
+                      console.error('❌ History button error:', err)
+                    }
                   }}
                   onMouseEnter={() => soundManager.playHover()}
                   className="flex items-center gap-1 px-2 py-1.5 sm:px-3 sm:py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors text-xs sm:text-sm whitespace-nowrap"
